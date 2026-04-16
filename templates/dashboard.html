@@ -697,6 +697,7 @@ function switchTab(name, btn) {
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     btn.classList.add('active');
+    history.replaceState(null, '', '#' + name);
 }
 
 let pnlChart = null;
@@ -1275,6 +1276,13 @@ async function updateLiveDashboard() {
 }
 
 window.addEventListener('load', () => {
+    // Restore tab from URL hash
+    const hash = location.hash.replace('#', '');
+    if (hash && document.getElementById('tab-' + hash)) {
+        const btn = document.querySelector(`.tab-btn[onclick*="'${hash}'"]`);
+        if (btn) switchTab(hash, btn);
+    }
+
     initChart();
     initLiveChart();
     initCompareChart();
