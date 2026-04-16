@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Trading Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #0a0e27; color: #fff; min-height: 100vh;
+            background-image: radial-gradient(at 0% 0%, rgba(99,102,241,0.15) 0px, transparent 50%); }
+
+        .topbar { display:flex; align-items:center; justify-content:space-between; padding:14px 28px;
+            background:rgba(10,14,39,0.95); border-bottom:1px solid rgba(255,255,255,0.07);
+            position:sticky; top:0; z-index:100; }
+        .topbar-brand { font-size:1.1em; font-weight:800; background:linear-gradient(135deg,#667eea,#f093fb);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .topbar-right { display:flex; gap:12px; align-items:center; }
+        .nav-link { color:rgba(255,255,255,0.6); text-decoration:none; font-size:0.9em; padding:6px 14px;
+            border-radius:8px; border:1px solid rgba(255,255,255,0.1); transition:background 0.2s; }
+        .nav-link:hover { background:rgba(255,255,255,0.07); color:#fff; }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 0 24px; }
+        h1 { font-size: 2em; font-weight: 800; margin-bottom: 8px; }
+        .subtitle { color: rgba(255,255,255,0.5); margin-bottom: 36px; }
+
+        .section { margin-bottom: 36px; }
+        .section-title { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;
+            color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+
+        .count-badge { display:inline-flex; align-items:center; justify-content:center;
+            width:22px; height:22px; border-radius:50%; font-size:0.75em; font-weight:700;
+            margin-left:8px; }
+        .count-pending { background:rgba(245,158,11,0.3); color:#fbbf24; }
+        .count-approved { background:rgba(16,185,129,0.3); color:#10b981; }
+        .count-denied { background:rgba(239,68,68,0.3); color:#f87171; }
+
+        .request-card { background:rgba(17,25,54,0.95); border:1px solid rgba(255,255,255,0.08);
+            border-radius:14px; padding:18px 20px; display:flex; align-items:center; gap:16px;
+            margin-bottom:10px; }
+        .request-card.pending { border-left:3px solid #fbbf24; }
+        .request-card.approved { border-left:3px solid #10b981; }
+        .request-card.denied { border-left:3px solid #ef4444; }
+
+        .avatar { width:44px; height:44px; border-radius:50%; flex-shrink:0; }
+        .avatar-placeholder { width:44px; height:44px; border-radius:50%; background:rgba(99,102,241,0.3);
+            display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0; }
+
+        .info { flex:1; }
+        .info .name { font-weight:700; margin-bottom:3px; }
+        .info .email { font-size:0.85em; color:rgba(255,255,255,0.5); }
+        .info .time { font-size:0.78em; color:rgba(255,255,255,0.35); margin-top:3px; }
+
+        .actions { display:flex; gap:8px; }
+        .btn-approve { background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4);
+            color:#10b981; padding:7px 16px; border-radius:8px; font-size:0.85em; font-weight:600;
+            cursor:pointer; font-family:inherit; transition:background 0.2s; }
+        .btn-approve:hover { background:rgba(16,185,129,0.35); }
+        .btn-deny { background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3);
+            color:#f87171; padding:7px 16px; border-radius:8px; font-size:0.85em; font-weight:600;
+            cursor:pointer; font-family:inherit; transition:background 0.2s; }
+        .btn-deny:hover { background:rgba(239,68,68,0.3); }
+        .status-tag { font-size:0.8em; padding:4px 12px; border-radius:20px; font-weight:600; }
+        .tag-approved { background:rgba(16,185,129,0.15); color:#10b981; }
+        .tag-denied { background:rgba(239,68,68,0.15); color:#f87171; }
+
+        .empty { text-align:center; padding:32px; color:rgba(255,255,255,0.3); font-size:0.95em; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="topbar-brand">⚙️ Admin Console</div>
+    <div class="topbar-right">
+        <a href="/" class="nav-link">← Dashboard</a>
+        <a href="/logout" class="nav-link">Sign out</a>
+    </div>
+</div>
+
+<div class="container">
+    <h1>Access Requests</h1>
+    <div class="subtitle">Manage who can access the Trading Dashboard.</div>
+
+    <!-- Pending -->
+    <div class="section">
+        <div class="section-title">
+            Pending
+            <span class="count-badge count-pending">{{ pending|length }}</span>
+        </div>
+
+        {% if pending %}
+            {% for r in pending %}
+            <div class="request-card pending">
+                {% if r.picture %}
+                    <img src="{{ r.picture }}" class="avatar" alt="{{ r.name }}">
+                {% else %}
+                    <div class="avatar-placeholder">{{ (r.name or r.email)[0]|upper }}</div>
+                {% endif %}
+                <div class="info">
+                    <div class="name">{{ r.name or "Unknown" }}</div>
+                    <div class="email">{{ r.email }}</div>
+                    <div class="time">Requested: {{ r.requested_at[:16].replace("T"," ") if r.requested_at else "—" }}</div>
+                </div>
+                <div class="actions">
+                    <form method="POST" action="/admin/approve">
+                        <input type="hidden" name="email" value="{{ r.email }}">
+                        <button type="submit" class="btn-approve">✓ Approve</button>
+                    </form>
+                    <form method="POST" action="/admin/deny">
+                        <input type="hidden" name="email" value="{{ r.email }}">
+                        <button type="submit" class="btn-deny">✗ Deny</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty">No pending requests</div>
+        {% endif %}
+    </div>
+
+    <!-- Approved -->
+    <div class="section">
+        <div class="section-title">
+            Approved
+            <span class="count-badge count-approved">{{ approved|length }}</span>
+        </div>
+        {% for r in approved %}
+        <div class="request-card approved">
+            {% if r.picture %}
+                <img src="{{ r.picture }}" class="avatar" alt="{{ r.name }}">
+            {% else %}
+                <div class="avatar-placeholder">{{ (r.name or r.email)[0]|upper }}</div>
+            {% endif %}
+            <div class="info">
+                <div class="name">{{ r.name or "Unknown" }}</div>
+                <div class="email">{{ r.email }}</div>
+            </div>
+            <div class="actions">
+                <span class="status-tag tag-approved">✓ Approved</span>
+                <form method="POST" action="/admin/deny">
+                    <input type="hidden" name="email" value="{{ r.email }}">
+                    <button type="submit" class="btn-deny">Revoke</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Denied -->
+    {% if denied %}
+    <div class="section">
+        <div class="section-title">
+            Denied
+            <span class="count-badge count-denied">{{ denied|length }}</span>
+        </div>
+        {% for r in denied %}
+        <div class="request-card denied">
+            {% if r.picture %}
+                <img src="{{ r.picture }}" class="avatar" alt="{{ r.name }}">
+            {% else %}
+                <div class="avatar-placeholder">{{ (r.name or r.email)[0]|upper }}</div>
+            {% endif %}
+            <div class="info">
+                <div class="name">{{ r.name or "Unknown" }}</div>
+                <div class="email">{{ r.email }}</div>
+            </div>
+            <div class="actions">
+                <form method="POST" action="/admin/approve">
+                    <input type="hidden" name="email" value="{{ r.email }}">
+                    <button type="submit" class="btn-approve">Re-approve</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+</body>
+</html>

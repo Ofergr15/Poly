@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Access — Trading Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99,102,241,0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59,130,246,0.15) 0px, transparent 50%);
+        }
+        .card {
+            background: rgba(17,25,54,0.95);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 48px 40px;
+            text-align: center;
+            width: 100%;
+            max-width: 420px;
+        }
+        .avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 16px; display: block; border: 3px solid rgba(255,255,255,0.1); }
+        .avatar-placeholder { width: 72px; height: 72px; border-radius: 50%; background: rgba(99,102,241,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.8em; font-weight: 700; margin: 0 auto 16px; }
+        h1 { font-size: 1.5em; font-weight: 800; margin-bottom: 8px; }
+        .email { color: rgba(255,255,255,0.5); font-size: 0.9em; margin-bottom: 24px; }
+        .msg { font-size: 1em; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 28px; }
+        .btn {
+            display: block; width: 100%; padding: 14px;
+            border-radius: 12px; font-size: 0.95em; font-weight: 600;
+            font-family: 'Inter', sans-serif; cursor: pointer; border: none;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-primary { background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; }
+        .btn-secondary { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); margin-top: 12px; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .icon { font-size: 3em; margin-bottom: 16px; }
+        .badge-pending  { background: rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.4); color:#fbbf24; padding:8px 20px; border-radius:20px; font-size:0.9em; display:inline-block; margin-bottom:20px; }
+        .badge-denied   { background: rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); color:#f87171; padding:8px 20px; border-radius:20px; font-size:0.9em; display:inline-block; margin-bottom:20px; }
+        .badge-success  { background: rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:#10b981; padding:8px 20px; border-radius:20px; font-size:0.9em; display:inline-block; margin-bottom:20px; }
+    </style>
+</head>
+<body>
+<div class="card">
+
+    {% if picture %}
+        <img src="{{ picture }}" class="avatar" alt="{{ name }}">
+    {% else %}
+        <div class="avatar-placeholder">{{ name[0]|upper if name else "?" }}</div>
+    {% endif %}
+
+    {% if state == "new" %}
+        <h1>Request Access</h1>
+        <div class="email">{{ email }}</div>
+        <div class="msg">You need permission to view the Trading Dashboard. Click below to send an access request to the admin.</div>
+        <form method="POST" action="/request-access">
+            <input type="hidden" name="email" value="{{ email }}">
+            <input type="hidden" name="name" value="{{ name }}">
+            <input type="hidden" name="picture" value="{{ picture }}">
+            <button type="submit" class="btn btn-primary">Request Access</button>
+        </form>
+
+    {% elif state == "submitted" %}
+        <div class="icon">📬</div>
+        <h1>Request Sent</h1>
+        <div class="badge-success">Pending review</div>
+        <div class="msg">Your request has been sent to the admin. You'll be able to log in once it's approved.</div>
+
+    {% elif state == "pending" %}
+        <div class="icon">⏳</div>
+        <h1>Request Pending</h1>
+        <div class="badge-pending">Awaiting approval</div>
+        <div class="msg">Your access request is under review. Please check back later.</div>
+
+    {% elif state == "denied" %}
+        <div class="icon">🚫</div>
+        <h1>Access Denied</h1>
+        <div class="badge-denied">Not approved</div>
+        <div class="msg">Your access request was not approved. Contact the admin if you think this is a mistake.</div>
+
+    {% endif %}
+
+    <a href="/login-page" class="btn btn-secondary" style="margin-top:16px;">← Back to login</a>
+</div>
+</body>
+</html>
