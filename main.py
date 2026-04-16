@@ -442,23 +442,12 @@ def _auth_check(request: Request):
 
 @app.get("/api/demo/session")
 async def api_demo_session(request: Request):
-    """Return the ISO timestamp when the demo bot last started."""
+    """Return ISO timestamp when the demo bot last started (proxied from VPS)."""
     user, err = _auth_check(request)
     if err:
         return err
-    # The demo bot writes this file on startup
-    candidates = [
-        Path(__file__).parent.parent / "demo_session_start.txt",   # /root/polymarket/
-        Path("/root/polymarket/demo_session_start.txt"),
-    ]
-    for p in candidates:
-        try:
-            ts = p.read_text().strip()
-            if ts:
-                return JSONResponse({"started_at": ts})
-        except Exception:
-            pass
-    return JSONResponse({"started_at": None})
+    data = await _proxy("demo/session")
+    return JSONResponse({"started_at": data.get("started_at")})
 
 
 @app.get("/api/week1_stats")
