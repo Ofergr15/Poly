@@ -197,6 +197,16 @@
         <div class="timer-item"><span class="timer-label">Session P&L</span><span class="timer-value" id="demoSessionPnl" style="color:#a5b4fc">—</span></div>
     </div>
 
+    <!-- ── BTC 5-min Window Timeline ── -->
+    <div id="btcTimeline" style="margin:12px 0;padding:12px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="color:rgba(255,255,255,0.45);font-size:0.72em;font-weight:600;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap">BTC 5-min Windows</span>
+            <div id="btcWindowList" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <span style="color:rgba(255,255,255,0.25);font-size:0.8em">Loading...</span>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Stats (shown once demo trades exist) ── -->
     <div id="demoDataSection" style="display:none;margin-top:4px">
         <div class="grid grid-6">
@@ -406,6 +416,16 @@
                 padding:12px 14px;height:220px;overflow-y:auto;font-family:monospace;font-size:0.8em;
                 line-height:1.6;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-all">
                 <span style="color:rgba(255,255,255,0.3)">Waiting for log output...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── BTC 5-min Window Timeline ── -->
+    <div style="margin:12px 0;padding:12px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="color:rgba(255,255,255,0.45);font-size:0.72em;font-weight:600;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap">BTC 5-min Windows</span>
+            <div id="btcWindowListLive" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <span style="color:rgba(255,255,255,0.25);font-size:0.8em">Loading...</span>
             </div>
         </div>
     </div>
@@ -750,6 +770,61 @@ async function updateDemoStatus() {
             $('ds_bot').textContent = 'Stopped'; $('ds_bot').style.color = 'rgba(255,255,255,0.4)';
             $('demoDot').style.background = '#666';
         }
+    } catch(e) {}
+}
+
+
+// ── BTC Window Timeline ────────────────────────────────────────
+function _renderBtcWindows(windows, listEl) {
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    windows.forEach(w => {
+        const label = w.title.replace(/Bitcoin Up or Down - [A-Za-z]+ \d+, /, '').replace(/ ET$/, '');
+        let bg, color, icon, border;
+        if (w.current) {
+            bg = 'rgba(165,180,252,0.18)'; color = '#a5b4fc'; border = '1.5px solid #a5b4fc'; icon = '';
+        } else if (w.closed) {
+            const up = (w.outcome || '').toLowerCase() === 'up';
+            bg     = up ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
+            color  = up ? '#10b981' : '#ef4444';
+            border = `1px solid ${color}33`;
+            icon   = up ? '▲' : '▼';
+        } else {
+            bg = 'rgba(255,255,255,0.04)'; color = 'rgba(255,255,255,0.35)'; border = '1px solid rgba(255,255,255,0.08)'; icon = '';
+        }
+        const pill = document.createElement('div');
+        pill.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:${bg};border:${border};color:${color};font-size:0.76em;font-weight:${w.current ? 700 : 500};white-space:nowrap`;
+        if (icon) { const ic = document.createElement('span'); ic.textContent = icon; pill.appendChild(ic); }
+        if (w.current) {
+            const dot = document.createElement('span');
+            dot.style.cssText = 'width:6px;height:6px;border-radius:50%;background:#a5b4fc;display:inline-block;animation:blink 1s infinite';
+            pill.appendChild(dot);
+        }
+        const txt = document.createElement('span'); txt.textContent = label; pill.appendChild(txt);
+        if (w.current) { const b = document.createElement('span'); b.style.cssText = 'font-size:0.75em;opacity:0.7;margin-left:2px'; b.textContent = 'NOW'; pill.appendChild(b); }
+        if (w.prices && !w.closed) {
+            const up_p   = w.prices['Up']   !== undefined ? w.prices['Up']   : w.prices['Yes'];
+            const down_p = w.prices['Down'] !== undefined ? w.prices['Down'] : w.prices['No'];
+            if (up_p !== undefined) {
+                const pr = document.createElement('span');
+                pr.style.cssText = 'opacity:0.65;font-size:0.85em;margin-left:2px';
+                pr.textContent = up_p >= 0.5 ? `↑${(up_p*100).toFixed(0)}%` : `↓${(down_p*100).toFixed(0)}%`;
+                pill.appendChild(pr);
+            }
+        }
+        listEl.appendChild(pill);
+    });
+}
+
+async function updateBtcTimeline() {
+    try {
+        const r = await fetch('/api/btc/timeline');
+        if (!r.ok) return;
+        const { windows } = await r.json();
+        if (!windows || !windows.length) return;
+
+        _renderBtcWindows(windows, $('btcWindowList'));
+        _renderBtcWindows(windows, $('btcWindowListLive'));
     } catch(e) {}
 }
 
@@ -1155,11 +1230,13 @@ window.addEventListener('load', () => {
     updateLiveStatus();
     updateLiveDashboard();
     updateLiveLogs();
+    updateBtcTimeline();
     setInterval(updateDemoDashboard, 5000);
     setInterval(updateDemoStatus,    6000);
     setInterval(updateLiveStatus,    6000);
     setInterval(updateLiveDashboard, 5000);
     setInterval(updateLiveLogs,      3000);
+    setInterval(updateBtcTimeline,  15000);
 });
 </script>
 </body>

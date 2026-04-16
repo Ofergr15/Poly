@@ -450,6 +450,69 @@ async def api_demo_session(request: Request):
     return JSONResponse({"started_at": data.get("started_at")})
 
 
+@app.get("/api/btc/timeline")
+async def api_btc_timeline(request: Request):
+    """Return recent + upcoming BTC 5-min window outcomes from Polymarket."""
+    user, err = _auth_check(request)
+    if err:
+        return err
+    import httpx, json as _json
+    from datetime import datetime, timezone, timedelta
+
+    GAMMA = "https://gamma-api.polymarket.com"
+    WINDOW = 300
+
+    def floor5(dt):
+        return dt.replace(second=0, microsecond=0, minute=(dt.minute // 5) * 5)
+
+    now_ts = int(floor5(datetime.now(timezone.utc)).timestamp())
+    windows = []
+
+    async with httpx.AsyncClient(timeout=8) as client:
+        for i in range(-5, 3):
+            ts   = now_ts + i * WINDOW
+            slug = f"btc-updown-5m-{ts}"
+            try:
+                resp = await client.get(f"{GAMMA}/events", params={"slug": slug})
+                events = resp.json()
+                if isinstance(events, dict):
+                    events = events.get("data", [])
+                if not events:
+                    continue
+                e   = events[0]
+                mkt = (e.get("markets") or [{}])[0]
+
+                raw_prices = mkt.get("outcomePrices") or []
+                if isinstance(raw_prices, str):
+                    try: raw_prices = _json.loads(raw_prices)
+                    except Exception: raw_prices = []
+                raw_outcomes = mkt.get("outcomes") or []
+                if isinstance(raw_outcomes, str):
+                    try: raw_outcomes = _json.loads(raw_outcomes)
+                    except Exception: raw_outcomes = []
+
+                prices   = [float(p) for p in raw_prices]
+                outcomes = raw_outcomes
+                outcome  = None
+                if e.get("closed") and prices and outcomes:
+                    idx     = prices.index(max(prices))
+                    outcome = outcomes[idx] if idx < len(outcomes) else None
+
+                windows.append({
+                    "ts":      ts,
+                    "title":   e.get("title", ""),
+                    "active":  e.get("active", False),
+                    "closed":  e.get("closed", False),
+                    "outcome": outcome,
+                    "current": ts == now_ts,
+                    "prices":  dict(zip(outcomes, prices)) if outcomes and prices else {},
+                })
+            except Exception:
+                continue
+
+    return JSONResponse({"windows": windows, "now_ts": now_ts})
+
+
 @app.get("/api/week1_stats")
 async def api_week1_stats(request: Request, since: str = None):
     user, err = _auth_check(request)
