@@ -493,18 +493,31 @@ async def api_btc_timeline(request: Request):
 
                 prices   = [float(p) for p in raw_prices]
                 outcomes = raw_outcomes
-                outcome  = None
-                if e.get("closed") and prices and outcomes:
-                    idx     = prices.index(max(prices))
-                    outcome = outcomes[idx] if idx < len(outcomes) else None
+
+                # A window is "past" if its end time (ts + 300s) is before now
+                # Don't rely on the API's `closed` flag — it can lag by minutes
+                end_ts  = ts + WINDOW
+                is_past = end_ts <= int(datetime.now(timezone.utc).timestamp())
+                api_closed = e.get("closed", False)
+                is_closed  = is_past or api_closed
+
+                outcome = None
+                if is_closed and prices and outcomes:
+                    # After resolution the winning token settles near 1.0
+                    # Before settlement prices are ~0.5; use >0.75 as resolved threshold
+                    max_p = max(prices)
+                    if max_p > 0.75:
+                        idx     = prices.index(max_p)
+                        outcome = outcomes[idx] if idx < len(outcomes) else None
+                    # If not settled yet, leave outcome=None (shows as gray)
 
                 windows.append({
                     "ts":      ts,
                     "title":   e.get("title", ""),
                     "active":  e.get("active", False),
-                    "closed":  e.get("closed", False),
+                    "closed":  is_closed,
                     "outcome": outcome,
-                    "current": ts == now_ts,
+                    "current": ts == now_ts and not is_past,
                     "prices":  dict(zip(outcomes, prices)) if outcomes and prices else {},
                 })
             except Exception:
