@@ -453,6 +453,56 @@ async def api_week1_trades(request: Request):
     return JSONResponse({"all_trades": trades, "rejected_trades": []})
 
 
+@app.get("/api/live/stats")
+async def api_live_stats(request: Request):
+    user, err = _auth_check(request)
+    if err:
+        return err
+    stats = compute_stats_from_db("live")
+    if stats:
+        return JSONResponse(stats)
+    return JSONResponse({
+        "total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
+        "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
+        "rejected_trades": 0, "current_window": 0,
+        "cum_pnl_series": [], "hourly_pnl": {},
+        "profit_factor": None, "max_drawdown": 0,
+    })
+
+
+@app.get("/api/live/trades")
+async def api_live_trades(request: Request):
+    user, err = _auth_check(request)
+    if err:
+        return err
+    trades = load_trades_from_db("live")
+    return JSONResponse({"all_trades": trades, "rejected_trades": []})
+
+
+@app.post("/api/live/kill", include_in_schema=False)
+async def api_live_kill(request: Request):
+    user = get_user(request)
+    if not user or not is_admin(user):
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    try:
+        Path("/tmp/KILL_LIVE_BOT").touch()
+        return JSONResponse({"ok": True, "message": "Kill switch activated"})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+@app.post("/api/live/unkill", include_in_schema=False)
+async def api_live_unkill(request: Request):
+    user = get_user(request)
+    if not user or not is_admin(user):
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    try:
+        Path("/tmp/KILL_LIVE_BOT").unlink(missing_ok=True)
+        return JSONResponse({"ok": True, "message": "Kill switch cleared"})
+    except Exception as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
 @app.get("/api/me")
 async def api_me(request: Request):
     user = get_user(request)

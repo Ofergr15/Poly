@@ -314,12 +314,148 @@
 
 <!-- ══════════ LIVE TAB ══════════ -->
 <div id="tab-live" class="tab-content">
-    <div class="coming-soon">
-        <div class="icon">🔴</div>
-        <h2>Live Trading</h2>
-        <p>Real-time trade execution will appear here once the live trading module is connected.</p>
-        <div class="tag">Coming next</div>
+<div class="container">
+
+    <!-- Timer strip (same pattern as week 1) -->
+    <div class="timer-strip" style="margin-top:8px">
+        <div class="timer-item">
+            <span class="timer-label"><span class="running-dot" id="liveDot" style="background:#ef4444"></span>Bot Status</span>
+            <span class="timer-value" id="liveBotStatus" style="color:rgba(255,255,255,0.4)">No data yet</span>
+        </div>
+        <div class="timer-divider"></div>
+        <div class="timer-item">
+            <span class="timer-label">Session P&amp;L</span>
+            <span class="timer-value green" id="liveSessionPnl">—</span>
+        </div>
+        <div class="timer-divider"></div>
+        <div class="timer-item">
+            <span class="timer-label">Trades Today</span>
+            <span class="timer-value" id="liveTradesToday">0</span>
+        </div>
+        <div class="timer-divider"></div>
+        <div class="timer-item">
+            <span class="timer-label">24h Projection</span>
+            <span class="timer-value" id="liveProj24h">—</span>
+        </div>
+        {% if is_admin %}
+        <div class="timer-divider"></div>
+        <div class="timer-item">
+            <span class="timer-label">Kill Switch</span>
+            <button id="killBtn" onclick="toggleKill()"
+                style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
+                color:#f87171;padding:6px 16px;border-radius:8px;font-size:0.82em;
+                font-weight:700;cursor:pointer;font-family:inherit">
+                🔴 Stop Bot
+            </button>
+        </div>
+        {% endif %}
     </div>
+
+    <!-- No data yet state -->
+    <div id="liveEmptyState" style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.4)">
+        <div style="font-size:3em;margin-bottom:16px">🔴</div>
+        <div style="font-size:1.3em;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:8px">Live Trading Ready</div>
+        <div style="font-size:0.92em;line-height:1.8;max-width:480px;margin:0 auto">
+            No live trades recorded yet.<br>
+            Start the bot: <code style="background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px">cd live && python run_live.py</code>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <div style="background:rgba(17,25,54,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 20px;font-size:0.85em">
+                <div style="color:rgba(255,255,255,0.4);margin-bottom:4px">Step 1</div>
+                <div>Fill <code>live/.env.live</code> with your keys</div>
+            </div>
+            <div style="background:rgba(17,25,54,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 20px;font-size:0.85em">
+                <div style="color:rgba(255,255,255,0.4);margin-bottom:4px">Step 2</div>
+                <div>Generate keys: <code>python clob_client.py --setup</code></div>
+            </div>
+            <div style="background:rgba(17,25,54,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 20px;font-size:0.85em">
+                <div style="color:rgba(255,255,255,0.4);margin-bottom:4px">Step 3</div>
+                <div>Run: <code>python live/run_live.py --dry-run</code></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live data (hidden until trades come in) -->
+    <div id="liveDataSection" style="display:none">
+
+        <!-- Key metrics (same 6 cards) -->
+        <div class="grid grid-6" style="margin-top:4px">
+            <div class="card">
+                <h3>Total P&amp;L</h3>
+                <div class="value positive" id="liveTotalPnl">$0.00</div>
+                <div class="sub" id="livePnlPerHour">$0.00/hour</div>
+            </div>
+            <div class="card">
+                <h3>Win Rate</h3>
+                <div class="value neutral" id="liveWinRate">0%</div>
+                <div class="sub" id="liveWinStats">0W / 0L</div>
+            </div>
+            <div class="card">
+                <h3>Total Trades</h3>
+                <div class="value neutral" id="liveTotalTrades">0</div>
+                <div class="sub" id="liveTradeRate">0/hour</div>
+            </div>
+            <div class="card">
+                <h3>Avg P&amp;L / Trade</h3>
+                <div class="value neutral" id="liveAvgPnl">$0.0000</div>
+                <div class="sub" id="liveAvgConf">Confidence: —</div>
+            </div>
+            <div class="card">
+                <h3>Profit Factor</h3>
+                <div class="value neutral" id="liveProfitFactor">—</div>
+                <div class="sub">Gross wins ÷ losses</div>
+            </div>
+            <div class="card">
+                <h3>Max Drawdown</h3>
+                <div class="value negative" id="liveMaxDrawdown">$0.00</div>
+                <div class="sub">Peak-to-trough</div>
+            </div>
+        </div>
+
+        <!-- P&L Chart -->
+        <div class="chart-card">
+            <h3>📈 Cumulative P&amp;L — Live</h3>
+            <div class="chart-container"><canvas id="livePnlChart"></canvas></div>
+        </div>
+
+        <!-- Side by side: Live vs Demo -->
+        <div class="grid grid-2" style="margin-bottom:20px">
+            <div class="comparison-card" style="border-left:3px solid #10b981">
+                <h3>🔴 Live Trading</h3>
+                <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value" id="cmp_live_trades">0</span></div>
+                <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value" id="cmp_live_rate">0</span></div>
+                <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value" id="cmp_live_wr">0%</span></div>
+                <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value" id="cmp_live_pnl">$0.00</span></div>
+                <div class="metric-row"><span class="metric-label">Avg/Trade</span><span class="metric-value" id="cmp_live_avg">$0.00</span></div>
+                <div class="metric-row"><span class="metric-label">Profit Factor</span><span class="metric-value" id="cmp_live_pf">—</span></div>
+            </div>
+            <div class="comparison-card" style="border-left:3px solid #667eea">
+                <h3>📊 Demo (Week 1)</h3>
+                <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value" id="cmp_demo_trades">—</span></div>
+                <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value" id="cmp_demo_rate">—</span></div>
+                <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value" id="cmp_demo_wr">—</span></div>
+                <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value" id="cmp_demo_pnl">—</span></div>
+                <div class="metric-row"><span class="metric-label">Avg/Trade</span><span class="metric-value" id="cmp_demo_avg">—</span></div>
+                <div class="metric-row"><span class="metric-label">Profit Factor</span><span class="metric-value" id="cmp_demo_pf">—</span></div>
+            </div>
+        </div>
+
+        <!-- Recent live fills -->
+        <div class="chart-card">
+            <h3>📜 Recent Live Fills (Last 10)</h3>
+            <table id="liveTradesTable">
+                <thead>
+                    <tr><th>Time</th><th>Side</th><th>Entry</th><th>Exit</th>
+                        <th>Gross</th><th>Fee</th><th>Slip</th><th>Net P&amp;L</th><th>Result</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.35);padding:20px">Waiting for live fills...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div><!-- /liveDataSection -->
+</div>
 </div>
 
 <script>
@@ -520,10 +656,176 @@ async function updateDashboard() {
     } catch(e) { console.error(e); }
 }
 
+// ── Live tab ──────────────────────────────────────────────────
+let livePnlChart = null;
+let killActive   = false;
+
+function initLiveChart() {
+    livePnlChart = new Chart(document.getElementById('livePnlChart').getContext('2d'), {
+        type: 'line',
+        data: { labels: [], datasets: [{ data: [], borderColor: '#10b981',
+            backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5,
+            fill: true, tension: 0.4, pointRadius: 0,
+            pointHoverRadius: 5, pointHoverBackgroundColor: '#10b981' }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(10,14,39,0.95)',
+                    borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 12,
+                    titleColor: 'rgba(255,255,255,0.5)', bodyColor: '#fff',
+                    bodyFont: { size: 14, weight: '700', family: 'Inter' },
+                    callbacks: {
+                        title: ctx => { const d = new Date(ctx[0].label); return isNaN(d) ? ctx[0].label : d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); },
+                        label: ctx => { const v = ctx.raw; return (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(4); }
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' },
+                     ticks: { color: 'rgba(255,255,255,0.4)', maxTicksLimit: 10,
+                         callback: function(val) { const d = new Date(this.getLabelForValue(val)); return isNaN(d) ? val : d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+                     } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' },
+                     ticks: { color: 'rgba(255,255,255,0.4)', callback: v => '$' + v.toFixed(2) } }
+            }
+        }
+    });
+}
+
+async function updateLiveDashboard() {
+    try {
+        const [lr, tr, dr] = await Promise.all([
+            fetch('/api/live/stats'),
+            fetch('/api/live/trades'),
+            fetch('/api/week1_stats'),   // demo comparison
+        ]);
+        if (lr.status === 401) { window.location.href = '/login-page'; return; }
+
+        const ls  = await lr.json();
+        const ltd = await tr.json();
+        const ds  = await dr.json();
+        const liveTrades = ltd.all_trades || [];
+
+        const hasData = (ls.total_trades || 0) > 0;
+        $('liveEmptyState').style.display  = hasData ? 'none'  : 'block';
+        $('liveDataSection').style.display = hasData ? 'block' : 'none';
+
+        // Timer strip
+        const pphLive = ls.elapsed_hours > 0 ? (ls.total_pnl || 0) / ls.elapsed_hours : 0;
+        $('liveSessionPnl').textContent = fmtSign(ls.total_pnl || 0);
+        $('liveSessionPnl').className   = 'timer-value ' + (ls.total_pnl >= 0 ? 'green' : 'negative');
+        $('liveTradesToday').textContent = (ls.total_trades || 0).toLocaleString();
+        $('liveProj24h').textContent    = fmtSign(pphLive * 24);
+        $('liveProj24h').className      = 'timer-value ' + (pphLive >= 0 ? 'green' : 'negative');
+
+        if (hasData) {
+            $('liveBotStatus').textContent = 'Running';
+            $('liveBotStatus').style.color = '#10b981';
+            $('liveDot').style.background  = '#10b981';
+        }
+
+        if (!hasData) return;
+
+        // Stats cards
+        const lpnlEl = $('liveTotalPnl');
+        lpnlEl.textContent = '$' + (ls.total_pnl||0).toFixed(2);
+        lpnlEl.className   = 'value ' + col(ls.total_pnl);
+        $('livePnlPerHour').textContent = fmtSign(pphLive) + '/hour';
+        $('liveWinRate').textContent    = (ls.win_rate||0) + '%';
+        $('liveWinStats').textContent   = (ls.wins||0) + 'W / ' + (ls.losses||0) + 'L';
+        $('liveTotalTrades').textContent= (ls.total_trades||0).toLocaleString();
+        $('liveTradeRate').textContent  = (ls.trades_per_hour||0).toFixed(1) + '/hour';
+
+        const lavg = ls.avg_pnl || (ls.total_trades > 0 ? (ls.total_pnl||0)/ls.total_trades : 0);
+        $('liveAvgPnl').textContent = '$' + lavg.toFixed(4);
+        $('liveAvgPnl').className   = 'value ' + col(lavg);
+        $('liveAvgConf').textContent= 'Confidence: ' + (ls.avg_confidence||0).toFixed(1) + '%';
+
+        const lpf = ls.profit_factor;
+        const lpfEl = $('liveProfitFactor');
+        if (lpf == null || lpf === 0) { lpfEl.textContent = '—'; lpfEl.className = 'value neutral'; }
+        else { lpfEl.textContent = lpf >= 999 ? '∞' : lpf.toFixed(2); lpfEl.className = 'value ' + (lpf >= 1.5 ? 'positive' : lpf >= 1 ? 'neutral' : 'negative'); }
+
+        $('liveMaxDrawdown').textContent = (ls.max_drawdown > 0) ? '-$' + ls.max_drawdown.toFixed(2) : '$0.00';
+
+        // Chart
+        const lnet = ls.total_pnl || 0;
+        const lseries = ls.cum_pnl_series || [];
+        if (lseries.length > 0) {
+            const rate = Math.max(1, Math.floor(lseries.length / 120));
+            const samp = lseries.filter((_,i) => i % rate === 0);
+            livePnlChart.data.labels = samp.map(p => p.t || p);
+            livePnlChart.data.datasets[0].data = samp.map(p => p.v != null ? p.v : p);
+            livePnlChart.data.datasets[0].borderColor     = lnet >= 0 ? '#10b981' : '#ef4444';
+            livePnlChart.data.datasets[0].backgroundColor = lnet >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+            livePnlChart.update('none');
+        }
+
+        // Comparison
+        const davg = ds.avg_pnl || (ds.total_trades > 0 ? (ds.total_pnl||0)/ds.total_trades : 0);
+        $('cmp_live_trades').textContent = (ls.total_trades||0).toLocaleString();
+        $('cmp_live_rate').textContent   = (ls.trades_per_hour||0).toFixed(0);
+        $('cmp_live_wr').textContent     = (ls.win_rate||0) + '%';
+        $('cmp_live_pnl').textContent    = '$' + (ls.total_pnl||0).toFixed(2);
+        $('cmp_live_pnl').className      = 'metric-value ' + col(ls.total_pnl);
+        $('cmp_live_avg').textContent    = '$' + lavg.toFixed(4);
+        $('cmp_live_pf').textContent     = lpf >= 999 ? '∞' : lpf ? lpf.toFixed(2) : '—';
+
+        $('cmp_demo_trades').textContent = (ds.total_trades||0).toLocaleString();
+        $('cmp_demo_rate').textContent   = (ds.trades_per_hour||0).toFixed(0);
+        $('cmp_demo_wr').textContent     = (ds.win_rate||0) + '%';
+        $('cmp_demo_pnl').textContent    = '$' + (ds.total_pnl||0).toFixed(2);
+        $('cmp_demo_pnl').className      = 'metric-value ' + col(ds.total_pnl);
+        $('cmp_demo_avg').textContent    = '$' + davg.toFixed(4);
+        const dpf = ds.profit_factor;
+        $('cmp_demo_pf').textContent     = dpf >= 999 ? '∞' : dpf ? dpf.toFixed(2) : '—';
+
+        // Recent live fills
+        const recent = liveTrades.slice(-10).reverse();
+        const tbody  = $('liveTradesTable').querySelector('tbody');
+        if (recent.length > 0) {
+            tbody.innerHTML = recent.map(t => `
+                <tr>
+                    <td style="color:rgba(255,255,255,0.45)">${(t.timestamp||'').split(' ')[1] || '—'}</td>
+                    <td><span style="font-size:0.8em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.07)">${t.side||'—'}</span></td>
+                    <td>${(t.entry_price||0).toFixed(4)}</td>
+                    <td>${(t.exit_price||0).toFixed(4)}</td>
+                    <td>${'$'+(t.gross_pnl||0).toFixed(4)}</td>
+                    <td style="color:#ef4444">-$${(t.fee||0).toFixed(4)}</td>
+                    <td style="color:#f59e0b">-$${(t.slippage||0).toFixed(4)}</td>
+                    <td style="color:${(t.pnl||0)>0?'#10b981':'#ef4444'};font-weight:700">${(t.pnl||0)>=0?'+':''}$${(t.pnl||0).toFixed(4)}</td>
+                    <td style="color:${(t.result||'')==='WIN'?'#10b981':'#ef4444'}">${t.result||'—'}</td>
+                </tr>`).join('');
+        }
+    } catch(e) { console.error('Live dashboard error:', e); }
+}
+
+async function toggleKill() {
+    const btn = $('killBtn');
+    const endpoint = killActive ? '/api/live/unkill' : '/api/live/kill';
+    try {
+        const r = await fetch(endpoint, { method: 'POST' });
+        const d = await r.json();
+        if (d.ok) {
+            killActive = !killActive;
+            btn.textContent = killActive ? '🟢 Resume Bot' : '🔴 Stop Bot';
+            btn.style.background = killActive ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)';
+            btn.style.borderColor= killActive ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)';
+            btn.style.color      = killActive ? '#10b981' : '#f87171';
+        }
+    } catch(e) { console.error(e); }
+}
+
 window.addEventListener('load', () => {
     initChart();
+    initLiveChart();
     updateDashboard();
+    updateLiveDashboard();
     setInterval(updateDashboard, 5000);
+    setInterval(updateLiveDashboard, 5000);
 });
 </script>
 </body>
