@@ -457,6 +457,28 @@
     </div><!-- /liveControlPanel -->
     {% endif %}
 
+    <!-- ── Live Signal Alert ── -->
+    <div id="liveSignalSection" style="display:none;margin-top:16px">
+        <div class="chart-card" style="padding:18px 20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                <h3 style="margin:0">⚡ Live Signal</h3>
+                <span style="font-size:0.78em;color:rgba(255,255,255,0.35)" id="signalTimestamp"></span>
+            </div>
+            <!-- Current signal -->
+            <div id="currentSignal" style="display:flex;align-items:center;gap:16px;padding:16px;
+                background:rgba(255,255,255,0.04);border-radius:12px;margin-bottom:14px">
+                <div id="signalBadge" style="font-size:2em;min-width:48px;text-align:center">—</div>
+                <div style="flex:1">
+                    <div id="signalDirection" style="font-size:1.3em;font-weight:800;color:rgba(255,255,255,0.3)">No signal yet</div>
+                    <div id="signalDetail" style="font-size:0.82em;color:rgba(255,255,255,0.4);margin-top:3px"></div>
+                </div>
+                <div id="signalMarket" style="font-size:0.78em;color:rgba(255,255,255,0.35);max-width:260px;text-align:right;line-height:1.4"></div>
+            </div>
+            <!-- Recent signals history -->
+            <div id="signalHistory" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+    </div>
+
     <!-- ── Log viewer (visible when bot has run) ── -->
     <div id="liveLogSection" style="display:none;margin-top:16px">
         <div class="chart-card" style="padding:18px 20px">
@@ -841,15 +863,17 @@ async function updateLiveStatus() {
             startPanel.style.display = 'block';
         }
 
-        // Show log section if server connected
+        // Show log + signal section if server connected
         if (s.server_configured && s.connected !== false) {
             $('liveLogSection').style.display = 'block';
+            $('liveSignalSection').style.display = 'block';
         }
 
     } catch(e) { /* server unreachable */ }
 }
 
 // ── Log polling ───────────────────────────────────────────────
+let _lastMarket = '';
 async function updateLiveLogs() {
     try {
         const r = await fetch('/api/live/server/logs');
@@ -869,9 +893,51 @@ async function updateLiveLogs() {
             return `<span style="color:rgba(255,255,255,0.65)">${l}</span>`;
         });
         viewer.innerHTML = colored.join('\n');
-
         if (wasAtBottom) viewer.scrollTop = viewer.scrollHeight;
         $('logTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+        // ── Parse signals from logs ──
+        const signals = [];
+        for (const l of lines) {
+            if (l.includes('Market:')) {
+                _lastMarket = l.replace(/.*Market:\s*/, '').trim();
+            }
+            // match:  → BUY_UP @ 0.5500  conf=62.3%
+            const m = l.match(/→\s*(BUY_UP|BUY_DOWN|SKIP)\s*(?:@\s*([\d.]+))?\s*(?:conf=([\d.]+)%)?/);
+            if (m) {
+                signals.push({ dir: m[1], price: m[2] || null, conf: m[3] || null, market: _lastMarket });
+            }
+        }
+        if (signals.length) {
+            $('liveSignalSection').style.display = 'block';
+            const latest = signals[signals.length - 1];
+            const isBuy = latest.dir === 'BUY_UP' || latest.dir === 'BUY_DOWN';
+            const isUp  = latest.dir === 'BUY_UP';
+            $('signalBadge').textContent     = isBuy ? (isUp ? '📈' : '📉') : '⏸';
+            $('signalDirection').textContent = isBuy ? (isUp ? 'BUY YES (UP)' : 'BUY NO (DOWN)') : 'NO TRADE';
+            $('signalDirection').style.color = isBuy ? (isUp ? '#10b981' : '#f87171') : 'rgba(255,255,255,0.3)';
+            $('signalDetail').textContent    = [
+                latest.price ? `Entry @ ${latest.price}` : '',
+                latest.conf  ? `Confidence: ${latest.conf}%` : ''
+            ].filter(Boolean).join('  ·  ');
+            $('signalMarket').textContent    = latest.market || '';
+            $('signalTimestamp').textContent = 'Last signal ' + new Date().toLocaleTimeString();
+
+            // History — last 5 signals
+            const hist = signals.slice(-5).reverse();
+            $('signalHistory').innerHTML = hist.map(s => {
+                const up = s.dir === 'BUY_UP', buy = s.dir !== 'SKIP';
+                const col = buy ? (up ? '#10b981' : '#f87171') : 'rgba(255,255,255,0.25)';
+                const lbl = buy ? (up ? '▲ BUY YES' : '▼ BUY NO') : '— SKIP';
+                return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;
+                    background:rgba(255,255,255,0.03);border-radius:8px;font-size:0.82em">
+                    <span style="color:${col};font-weight:700;min-width:72px">${lbl}</span>
+                    ${s.price ? `<span style="color:rgba(255,255,255,0.5)">@ ${s.price}</span>` : ''}
+                    ${s.conf  ? `<span style="color:rgba(255,255,255,0.4)">conf ${s.conf}%</span>` : ''}
+                    <span style="color:rgba(255,255,255,0.25);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.market}</span>
+                </div>`;
+            }).join('');
+        }
     } catch(e) {}
 }
 
