@@ -163,6 +163,11 @@ def is_admin(user: dict) -> bool:
 
 # ─── Auth routes ──────────────────────────────────────────────────────────────
 
+@app.get("/debug-redirect", include_in_schema=False)
+async def debug_redirect(request: Request):
+    redirect_uri = f"{PUBLIC_URL}/auth/callback" if PUBLIC_URL else str(request.url_for("auth_callback"))
+    return JSONResponse({"redirect_uri": redirect_uri, "public_url": PUBLIC_URL, "client_id": GOOGLE_CLIENT_ID[:20] + "..."})
+
 @app.get("/login", include_in_schema=False)
 async def login(request: Request):
     redirect_uri = f"{PUBLIC_URL}/auth/callback" if PUBLIC_URL else str(request.url_for("auth_callback"))
