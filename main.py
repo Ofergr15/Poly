@@ -29,6 +29,8 @@ PUBLIC_URL           = os.environ.get("PUBLIC_URL", "").rstrip("/")
 SUPABASE_URL         = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY         = os.environ.get("SUPABASE_KEY", "")
 ADMIN_EMAIL          = os.environ.get("ADMIN_EMAIL", "grosfeldofer@gmail.com")
+LIVE_SERVER_URL      = os.environ.get("LIVE_SERVER_URL", "").rstrip("/")   # e.g. http://your-vps-ip:8891
+LIVE_SERVER_SECRET   = os.environ.get("LIVE_SERVER_SECRET", "")
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
@@ -501,6 +503,73 @@ async def api_live_unkill(request: Request):
         return JSONResponse({"ok": True, "message": "Kill switch cleared"})
     except Exception as e:
         return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
+
+
+# ─── Live control-server proxy ────────────────────────────────────────────────
+# All /api/live/server/* routes proxy to the VPS control server.
+# Requires LIVE_SERVER_URL + LIVE_SERVER_SECRET set in Vercel env vars.
+
+async def _proxy(path: str, method: str = "GET", body: dict = None) -> dict:
+    """Forward a request to the live control server."""
+    if not LIVE_SERVER_URL:
+        return {"error": "LIVE_SERVER_URL not configured", "connected": False}
+    url = f"{LIVE_SERVER_URL}/{path.lstrip('/')}"
+    headers = {"x-secret": LIVE_SERVER_SECRET}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            if method == "POST":
+                resp = await client.post(url, json=body or {}, headers=headers)
+            else:
+                resp = await client.get(url, headers=headers)
+        return resp.json()
+    except httpx.ConnectError:
+        return {"error": "Cannot reach control server", "connected": False}
+    except Exception as e:
+        return {"error": str(e), "connected": False}
+
+
+@app.get("/api/live/server/status")
+async def live_server_status(request: Request):
+    user, err = _auth_check(request)
+    if err:
+        return err
+    data = await _proxy("status")
+    data["server_configured"] = bool(LIVE_SERVER_URL)
+    return JSONResponse(data)
+
+
+@app.post("/api/live/server/setup-keys")
+async def live_server_setup_keys(request: Request):
+    user = get_user(request)
+    if not user or not is_admin(user):
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    body = await request.json()
+    return JSONResponse(await _proxy("setup/keys", "POST", body))
+
+
+@app.post("/api/live/server/start")
+async def live_server_start(request: Request):
+    user = get_user(request)
+    if not user or not is_admin(user):
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    body = await request.json()
+    return JSONResponse(await _proxy("bot/start", "POST", body))
+
+
+@app.post("/api/live/server/stop")
+async def live_server_stop(request: Request):
+    user = get_user(request)
+    if not user or not is_admin(user):
+        return JSONResponse({"error": "Forbidden"}, status_code=403)
+    return JSONResponse(await _proxy("bot/stop", "POST"))
+
+
+@app.get("/api/live/server/logs")
+async def live_server_logs(request: Request):
+    user, err = _auth_check(request)
+    if err:
+        return err
+    return JSONResponse(await _proxy("bot/logs?lines=150"))
 
 
 @app.get("/api/me")

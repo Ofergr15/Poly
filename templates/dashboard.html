@@ -316,70 +316,167 @@
 <div id="tab-live" class="tab-content">
 <div class="container">
 
-    <!-- Timer strip (same pattern as week 1) -->
-    <div class="timer-strip" style="margin-top:8px">
+    <!-- ── Connection status bar ── -->
+    <div class="timer-strip" style="margin-top:8px;flex-wrap:wrap;gap:12px">
         <div class="timer-item">
-            <span class="timer-label"><span class="running-dot" id="liveDot" style="background:#ef4444"></span>Bot Status</span>
-            <span class="timer-value" id="liveBotStatus" style="color:rgba(255,255,255,0.4)">No data yet</span>
+            <span class="timer-label">Server</span>
+            <span class="timer-value" id="ls_server">—</span>
         </div>
         <div class="timer-divider"></div>
         <div class="timer-item">
-            <span class="timer-label">Session P&amp;L</span>
-            <span class="timer-value green" id="liveSessionPnl">—</span>
+            <span class="timer-label">Supabase</span>
+            <span class="timer-value" id="ls_supabase">—</span>
         </div>
         <div class="timer-divider"></div>
         <div class="timer-item">
-            <span class="timer-label">Trades Today</span>
-            <span class="timer-value" id="liveTradesToday">0</span>
+            <span class="timer-label">Poly Keys</span>
+            <span class="timer-value" id="ls_polykeys">—</span>
         </div>
         <div class="timer-divider"></div>
         <div class="timer-item">
-            <span class="timer-label">24h Projection</span>
-            <span class="timer-value" id="liveProj24h">—</span>
+            <span class="timer-label">serve.py</span>
+            <span class="timer-value" id="ls_serve">—</span>
         </div>
-        {% if is_admin %}
         <div class="timer-divider"></div>
         <div class="timer-item">
-            <span class="timer-label">Kill Switch</span>
-            <button id="killBtn" onclick="toggleKill()"
-                style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
-                color:#f87171;padding:6px 16px;border-radius:8px;font-size:0.82em;
-                font-weight:700;cursor:pointer;font-family:inherit">
-                🔴 Stop Bot
-            </button>
+            <span class="timer-label">Balance</span>
+            <span class="timer-value green" id="ls_balance">—</span>
         </div>
-        {% endif %}
-    </div>
-
-    <!-- No data yet state -->
-    <div id="liveEmptyState" style="text-align:center;padding:60px 20px;color:rgba(255,255,255,0.4)">
-        <div style="font-size:3em;margin-bottom:16px">🔴</div>
-        <div style="font-size:1.3em;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:8px">Live Trading Ready</div>
-        <div style="font-size:0.92em;line-height:1.8;max-width:480px;margin:0 auto">
-            No live trades recorded yet.<br>
-            Start the bot: <code style="background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px">cd live && python run_live.py</code>
-        </div>
-        <div style="margin-top:20px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-            <div style="background:rgba(17,25,54,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 20px;font-size:0.85em">
-                <div style="color:rgba(255,255,255,0.4);margin-bottom:4px">Step 1</div>
-                <div>Fill <code>live/.env.live</code> with your keys</div>
-            </div>
-            <div style="background:rgba(17,25,54,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 20px;font-size:0.85em">
-                <div style="color:rgba(255,255,255,0.4);margin-bottom:4px">Step 2</div>
-                <div>Generate keys: <code>python clob_client.py --setup</code></div>
-            </div>
-            <div style="background:rgba(17,25,54,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 20px;font-size:0.85em">
-                <div style="color:rgba(255,255,255,0.4);margin-bottom:4px">Step 3</div>
-                <div>Run: <code>python live/run_live.py --dry-run</code></div>
-            </div>
+        <div class="timer-divider"></div>
+        <div class="timer-item">
+            <span class="timer-label"><span class="running-dot" id="liveDot" style="background:#666"></span>Bot</span>
+            <span class="timer-value" id="ls_bot" style="color:rgba(255,255,255,0.4)">Stopped</span>
         </div>
     </div>
 
-    <!-- Live data (hidden until trades come in) -->
-    <div id="liveDataSection" style="display:none">
+    <!-- ── Admin control panel ── -->
+    {% if is_admin %}
+    <div id="liveControlPanel" style="margin-top:16px">
 
-        <!-- Key metrics (same 6 cards) -->
-        <div class="grid grid-6" style="margin-top:4px">
+        <!-- Step 1: Server not configured -->
+        <div id="liveStepNoServer" class="chart-card" style="display:none;border-color:rgba(245,158,11,0.3)">
+            <h3 style="color:#f59e0b">⚙️ Server Not Configured</h3>
+            <p style="color:rgba(255,255,255,0.55);margin-top:8px;line-height:1.7">
+                Set <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px">LIVE_SERVER_URL</code>
+                and <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px">LIVE_SERVER_SECRET</code>
+                as Vercel environment variables, then redeploy.<br><br>
+                On your server: <code style="background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px">pip install -r live/requirements.txt fastapi uvicorn && python live/control_server.py</code>
+            </p>
+        </div>
+
+        <!-- Step 2: Server reachable but can't connect -->
+        <div id="liveStepConnErr" class="chart-card" style="display:none;border-color:rgba(239,68,68,0.3)">
+            <h3 style="color:#f87171">❌ Cannot Reach Server</h3>
+            <p id="liveConnErrMsg" style="color:rgba(255,255,255,0.55);margin-top:8px"></p>
+        </div>
+
+        <!-- Step 3: Connected, no Polymarket keys -->
+        <div id="liveStepSetupKeys" class="chart-card" style="display:none;border-color:rgba(99,102,241,0.3)">
+            <h3 style="margin-bottom:16px">🔑 Connect Polymarket Wallet</h3>
+            <p style="color:rgba(255,255,255,0.5);font-size:0.88em;margin-bottom:16px">
+                Paste your EVM wallet private key. It goes directly to your server — never stored on Vercel.
+            </p>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <input id="pkInput" type="password" placeholder="0x your private key..."
+                    style="flex:1;min-width:280px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);
+                    color:#fff;padding:10px 14px;border-radius:10px;font-size:0.88em;font-family:monospace;outline:none">
+                <button onclick="setupKeys()"
+                    style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;
+                    padding:10px 22px;border-radius:10px;font-size:0.88em;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+                    Generate API Keys
+                </button>
+            </div>
+            <div id="setupKeysMsg" style="margin-top:10px;font-size:0.85em;color:rgba(255,255,255,0.5)"></div>
+        </div>
+
+        <!-- Step 4: Ready — bot stopped, show start form -->
+        <div id="liveStepStart" class="chart-card" style="display:none;border-color:rgba(16,185,129,0.25)">
+            <h3 style="margin-bottom:18px">🚀 Start Live Trading</h3>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px">
+                <div>
+                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Bet Size (USD)</label>
+                    <input id="cfgBet" type="number" value="1" min="0.5" step="0.5"
+                        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+                        color:#fff;padding:9px 12px;border-radius:9px;font-size:0.95em;font-family:inherit;outline:none">
+                </div>
+                <div>
+                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Min Confidence (%)</label>
+                    <input id="cfgConf" type="number" value="55" min="50" max="95" step="1"
+                        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+                        color:#fff;padding:9px 12px;border-radius:9px;font-size:0.95em;font-family:inherit;outline:none">
+                </div>
+                <div>
+                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Max Hours (blank = ∞)</label>
+                    <input id="cfgHours" type="number" value="" min="0.5" step="0.5" placeholder="unlimited"
+                        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+                        color:#fff;padding:9px 12px;border-radius:9px;font-size:0.95em;font-family:inherit;outline:none">
+                </div>
+                <div>
+                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Mode</label>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 12px;
+                        background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:9px">
+                        <input id="cfgDryRun" type="checkbox"
+                            style="width:16px;height:16px;accent-color:#667eea;cursor:pointer">
+                        <span style="font-size:0.9em">Dry run (no real orders)</span>
+                    </label>
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+                <button onclick="startBot()" id="startBotBtn"
+                    style="background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;
+                    padding:12px 28px;border-radius:10px;font-size:0.95em;font-weight:700;cursor:pointer;font-family:inherit">
+                    ▶ Start Bot
+                </button>
+                <span id="startBotMsg" style="font-size:0.85em;color:rgba(255,255,255,0.5)"></span>
+            </div>
+        </div>
+
+        <!-- Step 5: Bot running — show stop button -->
+        <div id="liveStepRunning" class="chart-card" style="display:none;border-color:rgba(16,185,129,0.35)">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+                <div style="display:flex;align-items:center;gap:16px">
+                    <span style="font-size:1.5em">🟢</span>
+                    <div>
+                        <div style="font-weight:700;font-size:1.05em">Bot Running</div>
+                        <div id="runningCfgLabel" style="font-size:0.82em;color:rgba(255,255,255,0.45);margin-top:2px"></div>
+                    </div>
+                    <div style="display:flex;gap:20px;flex-wrap:wrap">
+                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Session P&L</div><div class="timer-value green" id="liveSessionPnl" style="font-size:1.1em">—</div></div>
+                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Trades</div><div class="timer-value" id="liveTradesToday" style="font-size:1.1em">0</div></div>
+                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">24h Proj</div><div class="timer-value green" id="liveProj24h" style="font-size:1.1em">—</div></div>
+                    </div>
+                </div>
+                <button onclick="stopBot()" id="stopBotBtn"
+                    style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
+                    color:#f87171;padding:10px 22px;border-radius:10px;font-size:0.9em;font-weight:700;cursor:pointer;font-family:inherit">
+                    ⏹ Stop Bot
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /liveControlPanel -->
+    {% endif %}
+
+    <!-- ── Log viewer (visible when bot has run) ── -->
+    <div id="liveLogSection" style="display:none;margin-top:16px">
+        <div class="chart-card" style="padding:18px 20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <h3 style="margin:0">📟 Bot Logs</h3>
+                <span style="font-size:0.78em;color:rgba(255,255,255,0.35)" id="logTimestamp"></span>
+            </div>
+            <div id="logViewer"
+                style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:10px;
+                padding:12px 14px;height:220px;overflow-y:auto;font-family:monospace;font-size:0.8em;
+                line-height:1.6;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-all">
+                <span style="color:rgba(255,255,255,0.3)">Waiting for log output...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Trading data (shown once live trades exist) ── -->
+    <div id="liveDataSection" style="display:none;margin-top:4px">
+
+        <div class="grid grid-6">
             <div class="card">
                 <h3>Total P&amp;L</h3>
                 <div class="value positive" id="liveTotalPnl">$0.00</div>
@@ -412,13 +509,11 @@
             </div>
         </div>
 
-        <!-- P&L Chart -->
         <div class="chart-card">
             <h3>📈 Cumulative P&amp;L — Live</h3>
             <div class="chart-container"><canvas id="livePnlChart"></canvas></div>
         </div>
 
-        <!-- Side by side: Live vs Demo -->
         <div class="grid grid-2" style="margin-bottom:20px">
             <div class="comparison-card" style="border-left:3px solid #10b981">
                 <h3>🔴 Live Trading</h3>
@@ -440,9 +535,8 @@
             </div>
         </div>
 
-        <!-- Recent live fills -->
         <div class="chart-card">
-            <h3>📜 Recent Live Fills (Last 10)</h3>
+            <h3>📜 Recent Live Fills</h3>
             <table id="liveTradesTable">
                 <thead>
                     <tr><th>Time</th><th>Side</th><th>Entry</th><th>Exit</th>
@@ -454,7 +548,7 @@
             </table>
         </div>
 
-    </div><!-- /liveDataSection -->
+    </div>
 </div>
 </div>
 
@@ -658,10 +752,11 @@ async function updateDashboard() {
 
 // ── Live tab ──────────────────────────────────────────────────
 let livePnlChart = null;
-let killActive   = false;
 
 function initLiveChart() {
-    livePnlChart = new Chart(document.getElementById('livePnlChart').getContext('2d'), {
+    const ctx = document.getElementById('livePnlChart');
+    if (!ctx) return;
+    livePnlChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: { labels: [], datasets: [{ data: [], borderColor: '#10b981',
             backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5,
@@ -695,12 +790,155 @@ function initLiveChart() {
     });
 }
 
+// ── Server status polling ─────────────────────────────────────
+function statusDot(ok) { return ok ? '<span style="color:#10b981">✓</span>' : '<span style="color:#ef4444">✗</span>'; }
+
+async function updateLiveStatus() {
+    try {
+        const r = await fetch('/api/live/server/status');
+        if (r.status === 401) return;
+        const s = await r.json();
+
+        // Connection status bar
+        $('ls_server').innerHTML   = s.connected === false ? '<span style="color:#ef4444">Offline</span>' : '<span style="color:#10b981">Online</span>';
+        $('ls_supabase').innerHTML = statusDot(s.supabase);
+        $('ls_polykeys').innerHTML = statusDot(s.poly_keys);
+        $('ls_serve').innerHTML    = statusDot(s.serve_py);
+        $('ls_balance').textContent= s.balance_usdc != null ? '$' + s.balance_usdc.toFixed(2) : '—';
+
+        if (s.bot_running) {
+            $('ls_bot').textContent = 'Running'; $('ls_bot').style.color = '#10b981';
+            $('liveDot').style.background = '#10b981';
+        } else {
+            $('ls_bot').textContent = 'Stopped'; $('ls_bot').style.color = 'rgba(255,255,255,0.4)';
+            $('liveDot').style.background = '#666';
+        }
+
+        // Control panel state machine
+        const noServer  = $('liveStepNoServer');
+        const connErr   = $('liveStepConnErr');
+        const setupKeys = $('liveStepSetupKeys');
+        const startPanel= $('liveStepStart');
+        const running   = $('liveStepRunning');
+        if (!noServer) return;  // not admin
+
+        [noServer, connErr, setupKeys, startPanel, running].forEach(el => el.style.display = 'none');
+
+        if (!s.server_configured) {
+            noServer.style.display = 'block';
+        } else if (s.connected === false || s.error) {
+            connErr.style.display = 'block';
+            $('liveConnErrMsg').textContent = s.error || 'Cannot reach control server. Make sure it is running.';
+        } else if (!s.poly_keys) {
+            setupKeys.style.display = 'block';
+        } else if (s.bot_running) {
+            running.style.display = 'block';
+            const cfg = s.bot_config || {};
+            $('runningCfgLabel').textContent =
+                `$${cfg.bet || 1} bet · ${cfg.confidence || 55}% confidence` +
+                (cfg.dry_run ? ' · DRY RUN' : ' · LIVE');
+        } else {
+            startPanel.style.display = 'block';
+        }
+
+        // Show log section if server connected
+        if (s.server_configured && s.connected !== false) {
+            $('liveLogSection').style.display = 'block';
+        }
+
+    } catch(e) { /* server unreachable */ }
+}
+
+// ── Log polling ───────────────────────────────────────────────
+async function updateLiveLogs() {
+    try {
+        const r = await fetch('/api/live/server/logs');
+        if (!r.ok) return;
+        const d = await r.json();
+        const lines = d.lines || [];
+        if (!lines.length) return;
+
+        const viewer = $('logViewer');
+        const wasAtBottom = viewer.scrollTop + viewer.clientHeight >= viewer.scrollHeight - 20;
+
+        const colored = lines.map(l => {
+            if (l.includes('WIN') || l.includes('✅') || l.includes('+$')) return `<span style="color:#10b981">${l}</span>`;
+            if (l.includes('LOSS') || l.includes('❌') || l.includes('ERROR') || l.includes('error')) return `<span style="color:#f87171">${l}</span>`;
+            if (l.includes('⚠️') || l.includes('SKIP') || l.includes('Cooling')) return `<span style="color:#f59e0b">${l}</span>`;
+            if (l.includes('→') || l.includes('←') || l.includes('Market:')) return `<span style="color:#a5b4fc">${l}</span>`;
+            return `<span style="color:rgba(255,255,255,0.65)">${l}</span>`;
+        });
+        viewer.innerHTML = colored.join('\n');
+
+        if (wasAtBottom) viewer.scrollTop = viewer.scrollHeight;
+        $('logTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    } catch(e) {}
+}
+
+// ── Bot controls ──────────────────────────────────────────────
+async function setupKeys() {
+    const pk  = $('pkInput').value.trim();
+    const msg = $('setupKeysMsg');
+    if (!pk) { msg.textContent = 'Please enter your private key.'; return; }
+    msg.textContent = 'Generating keys...';
+    try {
+        const r = await fetch('/api/live/server/setup-keys', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ private_key: pk })
+        });
+        const d = await r.json();
+        if (d.ok) {
+            msg.style.color = '#10b981';
+            msg.textContent = '✓ API keys generated and saved. Refreshing...';
+            $('pkInput').value = '';
+            setTimeout(updateLiveStatus, 1500);
+        } else {
+            msg.style.color = '#f87171';
+            msg.textContent = '✗ ' + (d.detail || d.error || 'Failed');
+        }
+    } catch(e) { msg.style.color = '#f87171'; msg.textContent = 'Request failed.'; }
+}
+
+async function startBot() {
+    const btn = $('startBotBtn');
+    const msg = $('startBotMsg');
+    btn.disabled = true; btn.textContent = 'Starting...';
+    const hours = $('cfgHours').value;
+    try {
+        const r = await fetch('/api/live/server/start', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                bet:        parseFloat($('cfgBet').value)   || 1.0,
+                confidence: parseFloat($('cfgConf').value)  || 55.0,
+                dry_run:    $('cfgDryRun').checked,
+                max_hours:  hours ? parseFloat(hours) : null,
+            })
+        });
+        const d = await r.json();
+        if (d.ok) { msg.style.color = '#10b981'; msg.textContent = '✓ ' + d.message; }
+        else       { msg.style.color = '#f87171'; msg.textContent = '✗ ' + (d.detail || d.error || d.message); }
+    } catch(e) { msg.style.color = '#f87171'; msg.textContent = 'Request failed.'; }
+    btn.disabled = false; btn.textContent = '▶ Start Bot';
+    setTimeout(updateLiveStatus, 1000);
+}
+
+async function stopBot() {
+    const btn = $('stopBotBtn');
+    btn.disabled = true; btn.textContent = 'Stopping...';
+    try {
+        await fetch('/api/live/server/stop', { method: 'POST' });
+    } catch(e) {}
+    btn.disabled = false; btn.textContent = '⏹ Stop Bot';
+    setTimeout(updateLiveStatus, 1000);
+}
+
+// ── Trading data ──────────────────────────────────────────────
 async function updateLiveDashboard() {
     try {
         const [lr, tr, dr] = await Promise.all([
             fetch('/api/live/stats'),
             fetch('/api/live/trades'),
-            fetch('/api/week1_stats'),   // demo comparison
+            fetch('/api/week1_stats'),
         ]);
         if (lr.status === 401) { window.location.href = '/login-page'; return; }
 
@@ -708,124 +946,96 @@ async function updateLiveDashboard() {
         const ltd = await tr.json();
         const ds  = await dr.json();
         const liveTrades = ltd.all_trades || [];
+        const hasData    = (ls.total_trades || 0) > 0;
 
-        const hasData = (ls.total_trades || 0) > 0;
-        $('liveEmptyState').style.display  = hasData ? 'none'  : 'block';
         $('liveDataSection').style.display = hasData ? 'block' : 'none';
-
-        // Timer strip
-        const pphLive = ls.elapsed_hours > 0 ? (ls.total_pnl || 0) / ls.elapsed_hours : 0;
-        $('liveSessionPnl').textContent = fmtSign(ls.total_pnl || 0);
-        $('liveSessionPnl').className   = 'timer-value ' + (ls.total_pnl >= 0 ? 'green' : 'negative');
-        $('liveTradesToday').textContent = (ls.total_trades || 0).toLocaleString();
-        $('liveProj24h').textContent    = fmtSign(pphLive * 24);
-        $('liveProj24h').className      = 'timer-value ' + (pphLive >= 0 ? 'green' : 'negative');
-
-        if (hasData) {
-            $('liveBotStatus').textContent = 'Running';
-            $('liveBotStatus').style.color = '#10b981';
-            $('liveDot').style.background  = '#10b981';
-        }
-
         if (!hasData) return;
 
-        // Stats cards
+        const pphLive = ls.elapsed_hours > 0 ? (ls.total_pnl||0)/ls.elapsed_hours : 0;
+
+        // Running strip values
+        if ($('liveSessionPnl')) {
+            $('liveSessionPnl').textContent = fmtSign(ls.total_pnl||0);
+            $('liveSessionPnl').className   = 'timer-value ' + (ls.total_pnl>=0 ? 'green' : 'negative');
+            $('liveTradesToday').textContent = (ls.total_trades||0).toLocaleString();
+            $('liveProj24h').textContent    = fmtSign(pphLive * 24);
+            $('liveProj24h').className      = 'timer-value ' + (pphLive>=0 ? 'green' : 'negative');
+        }
+
+        // Stat cards
         const lpnlEl = $('liveTotalPnl');
-        lpnlEl.textContent = '$' + (ls.total_pnl||0).toFixed(2);
-        lpnlEl.className   = 'value ' + col(ls.total_pnl);
-        $('livePnlPerHour').textContent = fmtSign(pphLive) + '/hour';
-        $('liveWinRate').textContent    = (ls.win_rate||0) + '%';
-        $('liveWinStats').textContent   = (ls.wins||0) + 'W / ' + (ls.losses||0) + 'L';
+        lpnlEl.textContent = '$'+(ls.total_pnl||0).toFixed(2); lpnlEl.className='value '+col(ls.total_pnl);
+        $('livePnlPerHour').textContent = fmtSign(pphLive)+'/hour';
+        $('liveWinRate').textContent    = (ls.win_rate||0)+'%';
+        $('liveWinStats').textContent   = (ls.wins||0)+'W / '+(ls.losses||0)+'L';
         $('liveTotalTrades').textContent= (ls.total_trades||0).toLocaleString();
-        $('liveTradeRate').textContent  = (ls.trades_per_hour||0).toFixed(1) + '/hour';
-
-        const lavg = ls.avg_pnl || (ls.total_trades > 0 ? (ls.total_pnl||0)/ls.total_trades : 0);
-        $('liveAvgPnl').textContent = '$' + lavg.toFixed(4);
-        $('liveAvgPnl').className   = 'value ' + col(lavg);
-        $('liveAvgConf').textContent= 'Confidence: ' + (ls.avg_confidence||0).toFixed(1) + '%';
-
-        const lpf = ls.profit_factor;
-        const lpfEl = $('liveProfitFactor');
-        if (lpf == null || lpf === 0) { lpfEl.textContent = '—'; lpfEl.className = 'value neutral'; }
-        else { lpfEl.textContent = lpf >= 999 ? '∞' : lpf.toFixed(2); lpfEl.className = 'value ' + (lpf >= 1.5 ? 'positive' : lpf >= 1 ? 'neutral' : 'negative'); }
-
-        $('liveMaxDrawdown').textContent = (ls.max_drawdown > 0) ? '-$' + ls.max_drawdown.toFixed(2) : '$0.00';
+        $('liveTradeRate').textContent  = (ls.trades_per_hour||0).toFixed(1)+'/hour';
+        const lavg = ls.avg_pnl||(ls.total_trades>0?(ls.total_pnl||0)/ls.total_trades:0);
+        $('liveAvgPnl').textContent='$'+lavg.toFixed(4); $('liveAvgPnl').className='value '+col(lavg);
+        $('liveAvgConf').textContent='Confidence: '+(ls.avg_confidence||0).toFixed(1)+'%';
+        const lpf=ls.profit_factor, lpfEl=$('liveProfitFactor');
+        if(!lpf){lpfEl.textContent='—';lpfEl.className='value neutral';}
+        else{lpfEl.textContent=lpf>=999?'∞':lpf.toFixed(2);lpfEl.className='value '+(lpf>=1.5?'positive':lpf>=1?'neutral':'negative');}
+        $('liveMaxDrawdown').textContent=(ls.max_drawdown>0)?'-$'+ls.max_drawdown.toFixed(2):'$0.00';
 
         // Chart
-        const lnet = ls.total_pnl || 0;
-        const lseries = ls.cum_pnl_series || [];
-        if (lseries.length > 0) {
-            const rate = Math.max(1, Math.floor(lseries.length / 120));
-            const samp = lseries.filter((_,i) => i % rate === 0);
-            livePnlChart.data.labels = samp.map(p => p.t || p);
-            livePnlChart.data.datasets[0].data = samp.map(p => p.v != null ? p.v : p);
-            livePnlChart.data.datasets[0].borderColor     = lnet >= 0 ? '#10b981' : '#ef4444';
-            livePnlChart.data.datasets[0].backgroundColor = lnet >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
-            livePnlChart.update('none');
+        if (livePnlChart) {
+            const lnet=ls.total_pnl||0, lseries=ls.cum_pnl_series||[];
+            if (lseries.length>0) {
+                const rate=Math.max(1,Math.floor(lseries.length/120));
+                const samp=lseries.filter((_,i)=>i%rate===0);
+                livePnlChart.data.labels=samp.map(p=>p.t||p);
+                livePnlChart.data.datasets[0].data=samp.map(p=>p.v!=null?p.v:p);
+                livePnlChart.data.datasets[0].borderColor=lnet>=0?'#10b981':'#ef4444';
+                livePnlChart.data.datasets[0].backgroundColor=lnet>=0?'rgba(16,185,129,0.08)':'rgba(239,68,68,0.08)';
+                livePnlChart.update('none');
+            }
         }
 
         // Comparison
-        const davg = ds.avg_pnl || (ds.total_trades > 0 ? (ds.total_pnl||0)/ds.total_trades : 0);
-        $('cmp_live_trades').textContent = (ls.total_trades||0).toLocaleString();
-        $('cmp_live_rate').textContent   = (ls.trades_per_hour||0).toFixed(0);
-        $('cmp_live_wr').textContent     = (ls.win_rate||0) + '%';
-        $('cmp_live_pnl').textContent    = '$' + (ls.total_pnl||0).toFixed(2);
-        $('cmp_live_pnl').className      = 'metric-value ' + col(ls.total_pnl);
-        $('cmp_live_avg').textContent    = '$' + lavg.toFixed(4);
-        $('cmp_live_pf').textContent     = lpf >= 999 ? '∞' : lpf ? lpf.toFixed(2) : '—';
+        const davg=ds.avg_pnl||(ds.total_trades>0?(ds.total_pnl||0)/ds.total_trades:0);
+        $('cmp_live_trades').textContent=(ls.total_trades||0).toLocaleString();
+        $('cmp_live_rate').textContent=(ls.trades_per_hour||0).toFixed(0);
+        $('cmp_live_wr').textContent=(ls.win_rate||0)+'%';
+        $('cmp_live_pnl').textContent='$'+(ls.total_pnl||0).toFixed(2); $('cmp_live_pnl').className='metric-value '+col(ls.total_pnl);
+        $('cmp_live_avg').textContent='$'+lavg.toFixed(4);
+        $('cmp_live_pf').textContent=lpf>=999?'∞':lpf?lpf.toFixed(2):'—';
+        $('cmp_demo_trades').textContent=(ds.total_trades||0).toLocaleString();
+        $('cmp_demo_rate').textContent=(ds.trades_per_hour||0).toFixed(0);
+        $('cmp_demo_wr').textContent=(ds.win_rate||0)+'%';
+        $('cmp_demo_pnl').textContent='$'+(ds.total_pnl||0).toFixed(2); $('cmp_demo_pnl').className='metric-value '+col(ds.total_pnl);
+        $('cmp_demo_avg').textContent='$'+davg.toFixed(4);
+        const dpf=ds.profit_factor; $('cmp_demo_pf').textContent=dpf>=999?'∞':dpf?dpf.toFixed(2):'—';
 
-        $('cmp_demo_trades').textContent = (ds.total_trades||0).toLocaleString();
-        $('cmp_demo_rate').textContent   = (ds.trades_per_hour||0).toFixed(0);
-        $('cmp_demo_wr').textContent     = (ds.win_rate||0) + '%';
-        $('cmp_demo_pnl').textContent    = '$' + (ds.total_pnl||0).toFixed(2);
-        $('cmp_demo_pnl').className      = 'metric-value ' + col(ds.total_pnl);
-        $('cmp_demo_avg').textContent    = '$' + davg.toFixed(4);
-        const dpf = ds.profit_factor;
-        $('cmp_demo_pf').textContent     = dpf >= 999 ? '∞' : dpf ? dpf.toFixed(2) : '—';
-
-        // Recent live fills
-        const recent = liveTrades.slice(-10).reverse();
-        const tbody  = $('liveTradesTable').querySelector('tbody');
-        if (recent.length > 0) {
-            tbody.innerHTML = recent.map(t => `
-                <tr>
-                    <td style="color:rgba(255,255,255,0.45)">${(t.timestamp||'').split(' ')[1] || '—'}</td>
-                    <td><span style="font-size:0.8em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.07)">${t.side||'—'}</span></td>
-                    <td>${(t.entry_price||0).toFixed(4)}</td>
-                    <td>${(t.exit_price||0).toFixed(4)}</td>
-                    <td>${'$'+(t.gross_pnl||0).toFixed(4)}</td>
-                    <td style="color:#ef4444">-$${(t.fee||0).toFixed(4)}</td>
-                    <td style="color:#f59e0b">-$${(t.slippage||0).toFixed(4)}</td>
-                    <td style="color:${(t.pnl||0)>0?'#10b981':'#ef4444'};font-weight:700">${(t.pnl||0)>=0?'+':''}$${(t.pnl||0).toFixed(4)}</td>
-                    <td style="color:${(t.result||'')==='WIN'?'#10b981':'#ef4444'}">${t.result||'—'}</td>
-                </tr>`).join('');
+        // Fills table
+        const recent=liveTrades.slice(-10).reverse();
+        const tbody=$('liveTradesTable').querySelector('tbody');
+        if (recent.length>0) {
+            tbody.innerHTML=recent.map(t=>`<tr>
+                <td style="color:rgba(255,255,255,0.45)">${(t.timestamp||'').split(' ')[1]||'—'}</td>
+                <td><span style="font-size:0.8em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.07)">${t.side||'—'}</span></td>
+                <td>${(t.entry_price||0).toFixed(4)}</td><td>${(t.exit_price||0).toFixed(4)}</td>
+                <td>$${(t.gross_pnl||0).toFixed(4)}</td>
+                <td style="color:#ef4444">-$${(t.fee||0).toFixed(4)}</td>
+                <td style="color:#f59e0b">-$${(t.slippage||0).toFixed(4)}</td>
+                <td style="color:${(t.pnl||0)>0?'#10b981':'#ef4444'};font-weight:700">${(t.pnl||0)>=0?'+':''}$${(t.pnl||0).toFixed(4)}</td>
+                <td style="color:${(t.result||'')==='WIN'?'#10b981':'#ef4444'}">${t.result||'—'}</td>
+            </tr>`).join('');
         }
     } catch(e) { console.error('Live dashboard error:', e); }
-}
-
-async function toggleKill() {
-    const btn = $('killBtn');
-    const endpoint = killActive ? '/api/live/unkill' : '/api/live/kill';
-    try {
-        const r = await fetch(endpoint, { method: 'POST' });
-        const d = await r.json();
-        if (d.ok) {
-            killActive = !killActive;
-            btn.textContent = killActive ? '🟢 Resume Bot' : '🔴 Stop Bot';
-            btn.style.background = killActive ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)';
-            btn.style.borderColor= killActive ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)';
-            btn.style.color      = killActive ? '#10b981' : '#f87171';
-        }
-    } catch(e) { console.error(e); }
 }
 
 window.addEventListener('load', () => {
     initChart();
     initLiveChart();
     updateDashboard();
+    updateLiveStatus();
     updateLiveDashboard();
-    setInterval(updateDashboard, 5000);
-    setInterval(updateLiveDashboard, 5000);
+    updateLiveLogs();
+    setInterval(updateDashboard,    5000);
+    setInterval(updateLiveStatus,   6000);
+    setInterval(updateLiveDashboard,5000);
+    setInterval(updateLiveLogs,     3000);
 });
 </script>
 </body>
