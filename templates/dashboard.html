@@ -268,39 +268,14 @@
     </div>
     {% endif %}
 
-    <!-- ── Live Signal ── -->
-    <div id="demoSignalSection" style="display:none;margin-top:16px">
-        <div class="chart-card" style="padding:18px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-                <h3 style="margin:0">⚡ Live Signal</h3>
-                <span style="font-size:0.78em;color:rgba(255,255,255,0.35)" id="demoSignalTimestamp"></span>
-            </div>
-            <div style="display:flex;align-items:center;gap:16px;padding:16px;background:rgba(255,255,255,0.04);border-radius:12px;margin-bottom:14px">
-                <div id="demoSignalBadge" style="font-size:2em;min-width:48px;text-align:center">—</div>
-                <div style="flex:1">
-                    <div id="demoSignalDirection" style="font-size:1.3em;font-weight:800;color:rgba(255,255,255,0.3)">No signal yet</div>
-                    <div id="demoSignalDetail" style="font-size:0.82em;color:rgba(255,255,255,0.4);margin-top:3px"></div>
-                </div>
-                <div id="demoSignalMarket" style="font-size:0.78em;color:rgba(255,255,255,0.35);max-width:260px;text-align:right;line-height:1.4"></div>
-            </div>
-            <div id="demoSignalHistory" style="display:flex;flex-direction:column;gap:6px"></div>
-        </div>
-    </div>
-
-    <!-- ── Bot Logs ── -->
-    <div id="demoLogSection" style="display:none;margin-top:16px">
-        <div class="chart-card" style="padding:18px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <h3 style="margin:0">📟 Bot Logs</h3>
-                <span style="font-size:0.78em;color:rgba(255,255,255,0.35)" id="demoLogTimestamp"></span>
-            </div>
-            <div id="demoLogViewer"
-                style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:10px;
+    <!-- ── Bot Logs (demo: hidden — logs only in Live tab) ── -->
+    <div id="demoLogSection" style="display:none">
+        <div id="demoLogViewer"
+                style="display:none;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:10px;
                 padding:12px 14px;height:220px;overflow-y:auto;font-family:monospace;font-size:0.8em;
                 line-height:1.6;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-all">
                 <span style="color:rgba(255,255,255,0.3)">Waiting for log output...</span>
             </div>
-        </div>
     </div>
 
     <!-- ── Stats (shown once demo trades exist) ── -->
@@ -753,7 +728,12 @@ function initDemoChart() {
 
 async function updateDemoDashboard() {
     try {
-        const [sr, tr] = await Promise.all([fetch('/api/week1_stats'), fetch('/api/week1_trades')]);
+        const since = localStorage.getItem('demoSessionStart') || '';
+        const qs = since ? '?since=' + encodeURIComponent(since) : '';
+        const [sr, tr] = await Promise.all([
+            fetch('/api/week1_stats' + qs),
+            fetch('/api/week1_trades' + qs),
+        ]);
         if (sr.status === 401) { window.location.href = '/login-page'; return; }
         const s  = await sr.json();
         const td = await tr.json();
@@ -863,71 +843,6 @@ async function updateDemoStatus() {
             startPanel.style.display = 'block';
         }
 
-        if (s.server_configured && s.connected !== false) {
-            $('demoLogSection').style.display   = 'block';
-            $('demoSignalSection').style.display = 'block';
-        }
-    } catch(e) {}
-}
-
-let _demoLastMarket = '';
-async function updateDemoLogs() {
-    try {
-        const r = await fetch('/api/live/server/logs');
-        if (!r.ok) return;
-        const d = await r.json();
-        const lines = d.lines || [];
-        if (!lines.length) return;
-
-        const viewer = $('demoLogViewer');
-        const wasAtBottom = viewer.scrollTop + viewer.clientHeight >= viewer.scrollHeight - 20;
-
-        const colored = lines.map(l => {
-            if (l.includes('WIN') || l.includes('✅') || l.includes('+$')) return `<span style="color:#10b981">${l}</span>`;
-            if (l.includes('LOSS') || l.includes('❌') || l.includes('ERROR') || l.includes('error')) return `<span style="color:#f87171">${l}</span>`;
-            if (l.includes('⚠️') || l.includes('SKIP') || l.includes('Cooling')) return `<span style="color:#f59e0b">${l}</span>`;
-            if (l.includes('→') || l.includes('←') || l.includes('Market:')) return `<span style="color:#a5b4fc">${l}</span>`;
-            return `<span style="color:rgba(255,255,255,0.65)">${l}</span>`;
-        });
-        viewer.innerHTML = colored.join('\n');
-        if (wasAtBottom) viewer.scrollTop = viewer.scrollHeight;
-        $('demoLogTimestamp').textContent = 'Updated ' + new Date().toLocaleTimeString();
-
-        const signals = [];
-        for (const l of lines) {
-            if (l.includes('Market:')) _demoLastMarket = l.replace(/.*Market:\s*/, '').trim();
-            const m = l.match(/→\s*(BUY_UP|BUY_DOWN|SKIP)\s*(?:@\s*([\d.]+))?\s*(?:conf=([\d.]+)%)?/);
-            if (m) signals.push({ dir: m[1], price: m[2]||null, conf: m[3]||null, market: _demoLastMarket });
-        }
-        if (signals.length) {
-            $('demoSignalSection').style.display = 'block';
-            const latest = signals[signals.length - 1];
-            const isBuy = latest.dir === 'BUY_UP' || latest.dir === 'BUY_DOWN';
-            const isUp  = latest.dir === 'BUY_UP';
-            $('demoSignalBadge').textContent     = isBuy ? (isUp ? '📈' : '📉') : '⏸';
-            $('demoSignalDirection').textContent = isBuy ? (isUp ? 'BUY YES (UP)' : 'BUY NO (DOWN)') : 'NO TRADE';
-            $('demoSignalDirection').style.color = isBuy ? (isUp ? '#10b981' : '#f87171') : 'rgba(255,255,255,0.3)';
-            $('demoSignalDetail').textContent    = [
-                latest.price ? `Entry @ ${latest.price}` : '',
-                latest.conf  ? `Confidence: ${latest.conf}%` : ''
-            ].filter(Boolean).join('  ·  ');
-            $('demoSignalMarket').textContent    = latest.market || '';
-            $('demoSignalTimestamp').textContent = 'Last signal ' + new Date().toLocaleTimeString();
-
-            const hist = signals.slice(-5).reverse();
-            $('demoSignalHistory').innerHTML = hist.map(sg => {
-                const up = sg.dir === 'BUY_UP', buy = sg.dir !== 'SKIP';
-                const c = buy ? (up ? '#10b981' : '#f87171') : 'rgba(255,255,255,0.25)';
-                const lbl = buy ? (up ? '▲ BUY YES' : '▼ BUY NO') : '— SKIP';
-                return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;
-                    background:rgba(255,255,255,0.03);border-radius:8px;font-size:0.82em">
-                    <span style="color:${c};font-weight:700;min-width:72px">${lbl}</span>
-                    ${sg.price ? `<span style="color:rgba(255,255,255,0.5)">@ ${sg.price}</span>` : ''}
-                    ${sg.conf  ? `<span style="color:rgba(255,255,255,0.4)">conf ${sg.conf}%</span>` : ''}
-                    <span style="color:rgba(255,255,255,0.25);flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${sg.market}</span>
-                </div>`;
-            }).join('');
-        }
     } catch(e) {}
 }
 
@@ -947,8 +862,12 @@ async function startDemoBot() {
             })
         });
         const d = await r.json();
-        if (d.ok) { msg.style.color = '#10b981'; msg.textContent = '✓ ' + d.message; }
-        else       { msg.style.color = '#f87171'; msg.textContent = '✗ ' + (d.detail || d.error || d.message); }
+        if (d.ok) {
+            msg.style.color = '#10b981'; msg.textContent = '✓ ' + d.message;
+            localStorage.setItem('demoSessionStart', new Date().toISOString());
+        } else {
+            msg.style.color = '#f87171'; msg.textContent = '✗ ' + (d.detail || d.error || d.message);
+        }
     } catch(e) { msg.style.color = '#f87171'; msg.textContent = 'Request failed.'; }
     btn.disabled = false; btn.textContent = '▶ Start Demo';
     setTimeout(updateDemoStatus, 1000);
@@ -1360,13 +1279,11 @@ window.addEventListener('load', () => {
     initCompareChart();
     updateDemoDashboard();
     updateDemoStatus();
-    updateDemoLogs();
     updateLiveStatus();
     updateLiveDashboard();
     updateLiveLogs();
     setInterval(updateDemoDashboard, 5000);
     setInterval(updateDemoStatus,    6000);
-    setInterval(updateDemoLogs,      3000);
     setInterval(updateLiveStatus,    6000);
     setInterval(updateLiveDashboard, 5000);
     setInterval(updateLiveLogs,      3000);

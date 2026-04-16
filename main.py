@@ -101,14 +101,21 @@ def set_request_status(email: str, status: str):
         print(f"[DB] set_request_status error: {e}")
 
 
-def compute_stats_from_db(source: str = "demo") -> Optional[dict]:
-    """Calculate comprehensive stats directly from Supabase trades table."""
+def compute_stats_from_db(source: str = "demo", since: str = None) -> Optional[dict]:
+    """Calculate comprehensive stats directly from Supabase trades table.
+
+    Args:
+        since: ISO timestamp string — only include trades at or after this time.
+    """
     if not _sb:
         return None
     try:
-        res = _sb.table("trades").select(
+        q = _sb.table("trades").select(
             "pnl,gross_pnl,fee,slippage,win_window,synced_at,confidence,side"
-        ).eq("source", source).order("win_window", desc=False).execute()
+        ).eq("source", source)
+        if since:
+            q = q.gte("synced_at", since)
+        res = q.order("win_window", desc=False).execute()
         trades = res.data or []
         if not trades:
             return {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
@@ -281,13 +288,16 @@ def load_latest_stats() -> Optional[dict]:
         return None
 
 
-def load_trades_from_db(source: str = "demo") -> list:
+def load_trades_from_db(source: str = "demo", since: str = None) -> list:
     if not _sb:
         return []
     try:
-        res = _sb.table("trades").select(
-            "win_window,timestamp,side,entry_price,exit_price,gross_pnl,fee,slippage,pnl,result,confidence"
-        ).eq("source", source).order("win_window", desc=False).execute()
+        q = _sb.table("trades").select(
+            "win_window,timestamp,side,entry_price,exit_price,gross_pnl,fee,slippage,pnl,result,confidence,synced_at"
+        ).eq("source", source)
+        if since:
+            q = q.gte("synced_at", since)
+        res = q.order("win_window", desc=False).execute()
         return res.data or []
     except Exception:
         return []
@@ -431,27 +441,27 @@ def _auth_check(request: Request):
 
 
 @app.get("/api/week1_stats")
-async def api_week1_stats(request: Request):
+async def api_week1_stats(request: Request, since: str = None):
     user, err = _auth_check(request)
     if err:
         return err
-    # Always compute live stats from Supabase trades
-    stats = compute_stats_from_db("demo")
+    stats = compute_stats_from_db("demo", since=since)
     if stats:
         return JSONResponse(stats)
     return JSONResponse({
         "total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
         "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
         "rejected_trades": 0, "current_window": 0,
+        "cum_pnl_series": [], "profit_factor": None, "max_drawdown": 0,
     })
 
 
 @app.get("/api/week1_trades")
-async def api_week1_trades(request: Request):
+async def api_week1_trades(request: Request, since: str = None):
     user, err = _auth_check(request)
     if err:
         return err
-    trades = load_trades_from_db("demo")
+    trades = load_trades_from_db("demo", since=since)
     return JSONResponse({"all_trades": trades, "rejected_trades": []})
 
 
