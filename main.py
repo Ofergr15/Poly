@@ -99,6 +99,47 @@ def set_request_status(email: str, status: str):
         print(f"[DB] set_request_status error: {e}")
 
 
+def compute_stats_from_db(source: str = "demo") -> Optional[dict]:
+    """Calculate live stats directly from Supabase trades table."""
+    if not _sb:
+        return None
+    try:
+        res = _sb.table("trades").select(
+            "pnl,win_window,synced_at"
+        ).eq("source", source).order("win_window", desc=False).execute()
+        trades = res.data or []
+        if not trades:
+            return {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
+                    "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
+                    "rejected_trades": 0, "current_window": 0}
+        total = len(trades)
+        wins = sum(1 for t in trades if (t.get("pnl") or 0) > 0)
+        losses = total - wins
+        total_pnl = sum(t.get("pnl") or 0 for t in trades)
+        # Estimate elapsed hours from first to last trade timestamp
+        from datetime import datetime, timezone
+        try:
+            first = datetime.fromisoformat(trades[0]["synced_at"].replace("Z", "+00:00"))
+            last  = datetime.fromisoformat(trades[-1]["synced_at"].replace("Z", "+00:00"))
+            elapsed = max((last - first).total_seconds() / 3600, 0.01)
+        except Exception:
+            elapsed = 1.0
+        return {
+            "total_trades":    total,
+            "wins":            wins,
+            "losses":          losses,
+            "win_rate":        round(wins / total * 100, 1),
+            "total_pnl":       round(total_pnl, 4),
+            "elapsed_hours":   round(elapsed, 2),
+            "trades_per_hour": round(total / elapsed, 1),
+            "rejected_trades": 0,
+            "current_window":  trades[-1].get("win_window", 0),
+        }
+    except Exception as e:
+        print(f"[DB] compute_stats error: {e}")
+        return None
+
+
 def save_trades(trades: list):
     if not trades or not _sb:
         return
@@ -107,7 +148,7 @@ def save_trades(trades: list):
         max_win = res.data[0]["win_window"] if res.data else 0
         new = [t for t in trades if (t.get("window") or 0) > max_win]
         if new:
-            rows = [{**t, "win_window": t.pop("window", None)} for t in new]
+            rows = [{**t, "win_window": t.pop("window", None), "source": "demo"} for t in new]
             _sb.table("trades").upsert(rows, on_conflict="win_window").execute()
     except Exception as e:
         print(f"[DB] save_trades error: {e}")
@@ -142,13 +183,13 @@ def load_latest_stats() -> Optional[dict]:
         return None
 
 
-def load_trades_from_db() -> list:
+def load_trades_from_db(source: str = "demo") -> list:
     if not _sb:
         return []
     try:
         res = _sb.table("trades").select(
             "win_window,timestamp,side,entry_price,exit_price,gross_pnl,fee,slippage,pnl,result,confidence"
-        ).order("win_window", desc=False).execute()
+        ).eq("source", source).order("win_window", desc=False).execute()
         return res.data or []
     except Exception:
         return []
@@ -296,21 +337,15 @@ async def api_week1_stats(request: Request):
     user, err = _auth_check(request)
     if err:
         return err
-    try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            resp = await client.get(f"{SIMULATION_API}/api/week1_stats")
-            stats = resp.json()
-        save_stats(stats)
+    # Always compute live stats from Supabase trades
+    stats = compute_stats_from_db("demo")
+    if stats:
         return JSONResponse(stats)
-    except Exception:
-        stats = load_latest_stats()
-        if stats:
-            return JSONResponse(stats)
-        return JSONResponse({
-            "total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
-            "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
-            "rejected_trades": 0, "current_window": 0, "_offline": True,
-        })
+    return JSONResponse({
+        "total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
+        "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
+        "rejected_trades": 0, "current_window": 0,
+    })
 
 
 @app.get("/api/week1_trades")
@@ -318,15 +353,8 @@ async def api_week1_trades(request: Request):
     user, err = _auth_check(request)
     if err:
         return err
-    try:
-        async with httpx.AsyncClient(timeout=5) as client:
-            resp = await client.get(f"{SIMULATION_API}/api/week1_trades")
-            data = resp.json()
-        save_trades(data.get("all_trades", []))
-        return JSONResponse(data)
-    except Exception:
-        trades = load_trades_from_db()
-        return JSONResponse({"all_trades": trades, "rejected_trades": [], "_offline": True})
+    trades = load_trades_from_db("demo")
+    return JSONResponse({"all_trades": trades, "rejected_trades": []})
 
 
 @app.get("/api/me")
