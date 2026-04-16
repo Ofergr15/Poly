@@ -179,7 +179,7 @@
 <div id="tab-week1" class="tab-content active">
 <div class="container">
 
-    <!-- ── Connection status bar ── -->
+    <!-- ── Status bar ── -->
     <div class="timer-strip" style="margin-top:8px;flex-wrap:wrap;gap:12px">
         <div class="timer-item"><span class="timer-label">Server</span><span class="timer-value" id="ds_server">—</span></div>
         <div class="timer-divider"></div>
@@ -188,94 +188,13 @@
         <div class="timer-item"><span class="timer-label">serve.py</span><span class="timer-value" id="ds_serve">—</span></div>
         <div class="timer-divider"></div>
         <div class="timer-item">
-            <span class="timer-label"><span class="running-dot" id="demoDot" style="background:#666"></span>Bot</span>
-            <span class="timer-value" id="ds_bot" style="color:rgba(255,255,255,0.4)">Stopped</span>
+            <span class="timer-label"><span class="running-dot" id="demoDot" style="background:#666"></span>Demo Bot</span>
+            <span class="timer-value" id="ds_bot" style="color:rgba(255,255,255,0.4)">—</span>
         </div>
-    </div>
-
-    <!-- ── Admin control panel ── -->
-    {% if is_admin %}
-    <div id="demoControlPanel" style="margin-top:16px">
-
-        <div id="demoStepNoServer" class="chart-card" style="display:none;border-color:rgba(245,158,11,0.3)">
-            <h3 style="color:#f59e0b">⚙️ Server Not Configured</h3>
-            <p style="color:rgba(255,255,255,0.55);margin-top:8px;line-height:1.7">
-                Set <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px">LIVE_SERVER_URL</code>
-                and <code style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px">LIVE_SERVER_SECRET</code>
-                as Vercel environment variables, then redeploy.
-            </p>
-        </div>
-
-        <div id="demoStepConnErr" class="chart-card" style="display:none;border-color:rgba(239,68,68,0.3)">
-            <h3 style="color:#f87171">❌ Cannot Reach Server</h3>
-            <p id="demoConnErrMsg" style="color:rgba(255,255,255,0.55);margin-top:8px"></p>
-        </div>
-
-        <div id="demoStepStart" class="chart-card" style="display:none;border-color:rgba(99,102,241,0.25)">
-            <h3 style="margin-bottom:12px">🧪 Start Demo Mode</h3>
-            <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:9px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#a5b4fc">
-                Demo mode — real signals, no real money. Trades recorded separately from live.
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px">
-                <div>
-                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Bet Size (USD)</label>
-                    <input id="demoCfgBet" type="number" value="1" min="0.5" step="0.5"
-                        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:9px 12px;border-radius:9px;font-size:0.95em;font-family:inherit;outline:none">
-                </div>
-                <div>
-                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Min Confidence (%)</label>
-                    <input id="demoCfgConf" type="number" value="55" min="50" max="95" step="1"
-                        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:9px 12px;border-radius:9px;font-size:0.95em;font-family:inherit;outline:none">
-                </div>
-                <div>
-                    <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Max Hours (blank = ∞)</label>
-                    <input id="demoCfgHours" type="number" value="" min="0.5" step="0.5" placeholder="unlimited"
-                        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#fff;padding:9px 12px;border-radius:9px;font-size:0.95em;font-family:inherit;outline:none">
-                </div>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center">
-                <button onclick="startDemoBot()" id="startDemoBotBtn"
-                    style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;
-                    padding:12px 28px;border-radius:10px;font-size:0.95em;font-weight:700;cursor:pointer;font-family:inherit">
-                    ▶ Start Demo
-                </button>
-                <span id="startDemoBotMsg" style="font-size:0.85em;color:rgba(255,255,255,0.5)"></span>
-            </div>
-        </div>
-
-        <div id="demoStepRunning" class="chart-card" style="display:none;border-color:rgba(99,102,241,0.35)">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-                <div style="display:flex;align-items:center;gap:16px">
-                    <span style="font-size:1.5em">🟣</span>
-                    <div>
-                        <div style="font-weight:700;font-size:1.05em">Demo Running</div>
-                        <div id="demoRunningCfgLabel" style="font-size:0.82em;color:rgba(255,255,255,0.45);margin-top:2px"></div>
-                    </div>
-                    <div style="display:flex;gap:20px;flex-wrap:wrap">
-                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Session P&L</div><div class="timer-value" id="demoSessionPnl" style="font-size:1.1em;color:#a5b4fc">—</div></div>
-                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Trades</div><div class="timer-value" id="demoTrades" style="font-size:1.1em">0</div></div>
-                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">24h Proj</div><div class="timer-value" id="demoProj24h" style="font-size:1.1em;color:#a5b4fc">—</div></div>
-                    </div>
-                </div>
-                <button onclick="stopDemoBot()" id="stopDemoBotBtn"
-                    style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
-                    color:#f87171;padding:10px 22px;border-radius:10px;font-size:0.9em;font-weight:700;cursor:pointer;font-family:inherit">
-                    ⏹ Stop Demo
-                </button>
-            </div>
-        </div>
-
-    </div>
-    {% endif %}
-
-    <!-- ── Bot Logs (demo: hidden — logs only in Live tab) ── -->
-    <div id="demoLogSection" style="display:none">
-        <div id="demoLogViewer"
-                style="display:none;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:10px;
-                padding:12px 14px;height:220px;overflow-y:auto;font-family:monospace;font-size:0.8em;
-                line-height:1.6;color:rgba(255,255,255,0.75);white-space:pre-wrap;word-break:break-all">
-                <span style="color:rgba(255,255,255,0.3)">Waiting for log output...</span>
-            </div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">Trades Today</span><span class="timer-value" id="demoTrades" style="color:#a5b4fc">—</span></div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">Session P&L</span><span class="timer-value" id="demoSessionPnl" style="color:#a5b4fc">—</span></div>
     </div>
 
     <!-- ── Stats (shown once demo trades exist) ── -->
@@ -746,14 +665,10 @@ async function updateDemoDashboard() {
         const eh = s.elapsed_hours || 0;
         const pphRate = eh > 0 ? (s.total_pnl || 0) / eh : 0;
 
-        // Running strip
-        if ($('demoSessionPnl')) {
-            $('demoSessionPnl').textContent = fmtSign(s.total_pnl||0);
-            $('demoSessionPnl').className   = 'timer-value ' + ((s.total_pnl||0)>=0 ? '' : 'negative');
-            $('demoTrades').textContent     = (s.total_trades||0).toLocaleString();
-            $('demoProj24h').textContent    = fmtSign(pphRate * 24);
-            $('demoProj24h').className      = 'timer-value ' + (pphRate>=0 ? '' : 'negative');
-        }
+        // Status bar strip
+        $('demoSessionPnl').textContent = fmtSign(s.total_pnl||0);
+        $('demoSessionPnl').style.color = (s.total_pnl||0)>=0 ? '#a5b4fc' : '#ef4444';
+        $('demoTrades').textContent     = (s.total_trades||0).toLocaleString();
 
         // Stat cards
         const pnlEl = $('demoTotalPnl');
@@ -813,73 +728,20 @@ async function updateDemoStatus() {
         $('ds_supabase').innerHTML = statusDot(s.supabase);
         $('ds_serve').innerHTML    = statusDot(s.serve_py);
 
-        if (s.bot_running) {
+        const demoRunning = s.bot_running && (s.bot_config || {}).dry_run === true;
+        if (demoRunning) {
             $('ds_bot').textContent = 'Running'; $('ds_bot').style.color = '#a5b4fc';
             $('demoDot').style.background = '#a5b4fc';
+        } else if (s.bot_running) {
+            $('ds_bot').textContent = 'Live mode'; $('ds_bot').style.color = '#10b981';
+            $('demoDot').style.background = '#10b981';
         } else {
             $('ds_bot').textContent = 'Stopped'; $('ds_bot').style.color = 'rgba(255,255,255,0.4)';
             $('demoDot').style.background = '#666';
         }
-
-        const noServer   = $('demoStepNoServer');
-        const connErr    = $('demoStepConnErr');
-        const startPanel = $('demoStepStart');
-        const running    = $('demoStepRunning');
-        if (!noServer) return; // not admin
-
-        [noServer, connErr, startPanel, running].forEach(el => el.style.display = 'none');
-
-        if (!s.server_configured) {
-            noServer.style.display = 'block';
-        } else if (s.connected === false || s.error) {
-            connErr.style.display = 'block';
-            $('demoConnErrMsg').textContent = s.error || 'Cannot reach control server.';
-        } else if (s.bot_running) {
-            running.style.display = 'block';
-            const cfg = s.bot_config || {};
-            $('demoRunningCfgLabel').textContent =
-                `$${cfg.bet||1} bet · ${cfg.confidence||55}% confidence · DRY RUN`;
-        } else {
-            startPanel.style.display = 'block';
-        }
-
     } catch(e) {}
 }
 
-async function startDemoBot() {
-    const btn = $('startDemoBotBtn');
-    const msg = $('startDemoBotMsg');
-    btn.disabled = true; btn.textContent = 'Starting...';
-    const hours = $('demoCfgHours').value;
-    try {
-        const r = await fetch('/api/live/server/start', {
-            method: 'POST', headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-                bet:        parseFloat($('demoCfgBet').value)  || 1.0,
-                confidence: parseFloat($('demoCfgConf').value) || 55.0,
-                dry_run:    true,
-                max_hours:  hours ? parseFloat(hours) : null,
-            })
-        });
-        const d = await r.json();
-        if (d.ok) {
-            msg.style.color = '#10b981'; msg.textContent = '✓ ' + d.message;
-            localStorage.setItem('demoSessionStart', new Date().toISOString());
-        } else {
-            msg.style.color = '#f87171'; msg.textContent = '✗ ' + (d.detail || d.error || d.message);
-        }
-    } catch(e) { msg.style.color = '#f87171'; msg.textContent = 'Request failed.'; }
-    btn.disabled = false; btn.textContent = '▶ Start Demo';
-    setTimeout(updateDemoStatus, 1000);
-}
-
-async function stopDemoBot() {
-    const btn = $('stopDemoBotBtn');
-    btn.disabled = true; btn.textContent = 'Stopping...';
-    try { await fetch('/api/live/server/stop', { method: 'POST' }); } catch(e) {}
-    btn.disabled = false; btn.textContent = '⏹ Stop Demo';
-    setTimeout(updateDemoStatus, 1000);
-}
 
 // ── Live tab ──────────────────────────────────────────────────
 let livePnlChart = null;
