@@ -143,7 +143,7 @@ def compute_stats_from_db(source: str = "demo") -> Optional[dict]:
             cum += p
             try:
                 dt = datetime.fromisoformat(t["synced_at"].replace("Z", "+00:00"))
-                ts = dt.strftime("%H:%M")
+                ts = dt.strftime("%Y-%m-%dT%H:%M:%SZ")  # UTC ISO — browser converts to local
             except Exception:
                 ts = str(i)
             cum_pnls.append({"t": ts, "v": round(cum, 4)})
