@@ -337,10 +337,30 @@ function initChart() {
         type: 'line',
         data: { labels: [], datasets: [{ data: [], borderColor: '#10b981',
             backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5,
-            fill: true, tension: 0.4, pointRadius: 0 }] },
+            fill: true, tension: 0.4, pointRadius: 0,
+            pointHoverRadius: 5, pointHoverBackgroundColor: '#10b981' }] },
         options: {
             responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(10,14,39,0.95)',
+                    borderColor: 'rgba(255,255,255,0.12)',
+                    borderWidth: 1,
+                    padding: 12,
+                    titleColor: 'rgba(255,255,255,0.5)',
+                    bodyColor: '#fff',
+                    bodyFont: { size: 14, weight: '700', family: 'Inter' },
+                    callbacks: {
+                        title: ctx => 'Time: ' + ctx[0].label,
+                        label: ctx => {
+                            const v = ctx.raw;
+                            return (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(4);
+                        }
+                    }
+                }
+            },
             scales: {
                 x: { grid: { color: 'rgba(255,255,255,0.04)' },
                      ticks: { color: 'rgba(255,255,255,0.4)', maxTicksLimit: 10 } },
@@ -436,10 +456,11 @@ async function updateDashboard() {
         if (series.length > 0) {
             const rate    = Math.max(1, Math.floor(series.length / 120));
             const sampled = series.filter((_,i) => i % rate === 0);
-            pnlChart.data.labels = sampled.map((_,i) => i * rate);
-            pnlChart.data.datasets[0].data = sampled;
-            pnlChart.data.datasets[0].borderColor       = net >= 0 ? '#10b981' : '#ef4444';
-            pnlChart.data.datasets[0].backgroundColor   = net >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+            // Each point is {t: "HH:MM", v: cumPnl}
+            pnlChart.data.labels               = sampled.map(p => p.t || p);
+            pnlChart.data.datasets[0].data     = sampled.map(p => p.v != null ? p.v : p);
+            pnlChart.data.datasets[0].borderColor     = net >= 0 ? '#10b981' : '#ef4444';
+            pnlChart.data.datasets[0].backgroundColor = net >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
             pnlChart.update('none');
         }
 

@@ -113,7 +113,8 @@ def compute_stats_from_db(source: str = "demo") -> Optional[dict]:
                     "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
                     "rejected_trades": 0, "current_window": 0,
                     "cum_pnl_series": [], "hourly_pnl": {},
-                    "profit_factor": None, "max_drawdown": 0}
+                    "profit_factor": None, "max_drawdown": 0,
+                    "sharpe_ratio": 0}
 
         total      = len(trades)
         pnls       = [t.get("pnl") or 0 for t in trades]
@@ -135,12 +136,17 @@ def compute_stats_from_db(source: str = "demo") -> Optional[dict]:
         except Exception:
             elapsed = 1.0
 
-        # Cumulative P&L & drawdown
+        # Cumulative P&L & drawdown (with timestamps for chart tooltips)
         cum, peak, max_dd = 0, 0, 0
         cum_pnls = []
-        for p in pnls:
+        for i, (p, t) in enumerate(zip(pnls, trades)):
             cum += p
-            cum_pnls.append(round(cum, 4))
+            try:
+                dt = datetime.fromisoformat(t["synced_at"].replace("Z", "+00:00"))
+                ts = dt.strftime("%H:%M")
+            except Exception:
+                ts = str(i)
+            cum_pnls.append({"t": ts, "v": round(cum, 4)})
             if cum > peak:
                 peak = cum
             dd = peak - cum
