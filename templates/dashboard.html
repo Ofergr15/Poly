@@ -258,19 +258,6 @@
         </div>
     </div>
 
-    <!-- Comparison -->
-    <div class="grid grid-2" style="margin-bottom:20px">
-        <div class="comparison-card">
-            <h3>✅ Week 1 Simulation</h3>
-            <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value" id="comp_trades">0</span></div>
-            <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value" id="comp_rate">0</span></div>
-            <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value" id="comp_wr">0%</span></div>
-            <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value" id="comp_pnl">$0.00</span></div>
-            <div class="metric-row"><span class="metric-label">Avg/Trade</span><span class="metric-value" id="comp_avg">$0.00</span></div>
-            <div class="metric-row"><span class="metric-label">Status</span><span class="metric-value positive" id="comp_status">Calculating...</span></div>
-        </div>
-    </div>
-
     <!-- Projections -->
     <div class="projections">
         <h3>💰 Profit Projections (Based on Current Rate)</h3>
@@ -281,6 +268,37 @@
             <div class="proj-item"><div class="pl">Monthly · $5 bets</div><div class="pv" id="p_m5">$0</div></div>
             <div class="proj-item"><div class="pl">Daily · $10 bets</div><div class="pv" id="p_d10">$0</div></div>
             <div class="proj-item"><div class="pl">Monthly · $10 bets</div><div class="pv" id="p_m10">$0</div></div>
+        </div>
+    </div>
+
+    <!-- Week 1 Simulation stats -->
+    <div class="chart-card" style="margin-bottom:20px">
+        <h3 style="margin-bottom:18px">✅ Week 1 Simulation</h3>
+        <div class="grid grid-6">
+            <div class="card">
+                <h3>Total Trades</h3>
+                <div class="value neutral" id="comp_trades">0</div>
+            </div>
+            <div class="card">
+                <h3>Trades/Hour</h3>
+                <div class="value neutral" id="comp_rate">0</div>
+            </div>
+            <div class="card">
+                <h3>Win Rate</h3>
+                <div class="value neutral" id="comp_wr">0%</div>
+            </div>
+            <div class="card">
+                <h3>Total P&amp;L</h3>
+                <div class="value positive" id="comp_pnl">$0.00</div>
+            </div>
+            <div class="card">
+                <h3>Avg/Trade</h3>
+                <div class="value neutral" id="comp_avg">$0.00</div>
+            </div>
+            <div class="card">
+                <h3>Status</h3>
+                <div class="value positive" id="comp_status">Calculating...</div>
+            </div>
         </div>
     </div>
 
