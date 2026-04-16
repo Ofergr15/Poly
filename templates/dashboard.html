@@ -172,6 +172,7 @@
 <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('week1',this)">📊 Week 1 Dashboard</button>
     <button class="tab-btn" onclick="switchTab('live',this)">🔴 Live Trading</button>
+    <button class="tab-btn" onclick="switchTab('compare',this)">⚖️ Compare</button>
 </div>
 
 <!-- ══════════ WEEK 1 TAB ══════════ -->
@@ -583,6 +584,109 @@
 </div>
 </div>
 
+<!-- ── Compare Tab ── -->
+<div id="tab-compare" class="tab-content">
+<div class="container">
+
+    <div style="text-align:center;padding:28px 0 8px">
+        <h2 style="font-size:1.5em;font-weight:800;background:linear-gradient(135deg,#667eea,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Demo vs Live</h2>
+        <p style="color:rgba(255,255,255,0.4);font-size:0.88em;margin-top:6px">Side-by-side performance comparison</p>
+    </div>
+
+    <!-- Head-to-head stat cards -->
+    <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:0;align-items:stretch;margin-bottom:20px">
+
+        <!-- Demo column -->
+        <div class="chart-card" style="border-radius:16px 0 0 16px;border-right:none">
+            <h3 style="text-align:center;margin-bottom:20px;color:#667eea">📊 Demo (Week 1)</h3>
+            <div style="display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Total P&L</span>
+                    <span style="font-weight:700;font-size:1.1em;color:#10b981" id="cmp2_demo_pnl">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Win Rate</span>
+                    <span style="font-weight:700" id="cmp2_demo_wr">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Total Trades</span>
+                    <span style="font-weight:700" id="cmp2_demo_trades">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Trades/Hour</span>
+                    <span style="font-weight:700" id="cmp2_demo_rate">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Avg P&L/Trade</span>
+                    <span style="font-weight:700" id="cmp2_demo_avg">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Profit Factor</span>
+                    <span style="font-weight:700" id="cmp2_demo_pf">—</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Max Drawdown</span>
+                    <span style="font-weight:700;color:#f87171" id="cmp2_demo_dd">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle labels -->
+        <div style="display:flex;flex-direction:column;justify-content:center;gap:14px;padding:56px 0 0;background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)">
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">P&L</div>
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">WIN%</div>
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">TRADES</div>
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">/HOUR</div>
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">AVG</div>
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">PF</div>
+            <div style="text-align:center;font-size:0.7em;color:rgba(255,255,255,0.25);padding:10px 0;height:42px;display:flex;align-items:center;justify-content:center">DD</div>
+        </div>
+
+        <!-- Live column -->
+        <div class="chart-card" style="border-radius:0 16px 16px 0;border-left:none">
+            <h3 style="text-align:center;margin-bottom:20px;color:#10b981">🔴 Live Trading</h3>
+            <div style="display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700;font-size:1.1em;color:#10b981" id="cmp2_live_pnl">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Total P&L</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700" id="cmp2_live_wr">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Win Rate</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700" id="cmp2_live_trades">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Total Trades</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700" id="cmp2_live_rate">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Trades/Hour</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700" id="cmp2_live_avg">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Avg P&L/Trade</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700" id="cmp2_live_pf">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Profit Factor</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                    <span style="font-weight:700;color:#f87171" id="cmp2_live_dd">—</span>
+                    <span style="color:rgba(255,255,255,0.45);font-size:0.85em">Max Drawdown</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlaid P&L chart -->
+    <div class="chart-card">
+        <h3>📈 Cumulative P&L — Demo vs Live</h3>
+        <div class="chart-container"><canvas id="compareChart"></canvas></div>
+    </div>
+
+</div>
+</div>
+
 <script>
 function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -816,6 +920,36 @@ function initLiveChart() {
                      } },
                 y: { grid: { color: 'rgba(255,255,255,0.04)' },
                      ticks: { color: 'rgba(255,255,255,0.4)', callback: v => '$' + v.toFixed(2) } }
+            }
+        }
+    });
+}
+
+function initCompareChart() {
+    const ctx = document.getElementById('compareChart');
+    if (!ctx) return;
+    window.compareChart = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: { labels: [], datasets: [
+            { label: 'Demo', data: [], borderColor: '#667eea', backgroundColor: 'rgba(102,126,234,0.08)',
+              borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 5 },
+            { label: 'Live', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)',
+              borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0, pointHoverRadius: 5 }
+        ]},
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { display: true, labels: { color: 'rgba(255,255,255,0.6)', font: { family: 'Inter' } } },
+                tooltip: {
+                    backgroundColor: 'rgba(10,14,39,0.95)',
+                    borderColor: 'rgba(255,255,255,0.12)', borderWidth: 1, padding: 12,
+                    callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.raw>=0?'+$':'-$') + Math.abs(ctx.raw).toFixed(4) }
+                }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.4)', maxTicksLimit: 10 } },
+                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.4)', callback: v => '$'+v.toFixed(2) } }
             }
         }
     });
@@ -1082,6 +1216,38 @@ async function updateLiveDashboard() {
         $('cmp_demo_avg').textContent='$'+davg.toFixed(4);
         const dpf=ds.profit_factor; $('cmp_demo_pf').textContent=dpf>=999?'∞':dpf?dpf.toFixed(2):'—';
 
+        // ── Compare tab ──
+        $('cmp2_demo_pnl').textContent   = '$'+(ds.total_pnl||0).toFixed(2);
+        $('cmp2_demo_pnl').style.color   = (ds.total_pnl||0)>=0?'#10b981':'#ef4444';
+        $('cmp2_demo_wr').textContent    = (ds.win_rate||0)+'%';
+        $('cmp2_demo_trades').textContent= (ds.total_trades||0).toLocaleString();
+        $('cmp2_demo_rate').textContent  = (ds.trades_per_hour||0).toFixed(1);
+        $('cmp2_demo_avg').textContent   = '$'+davg.toFixed(4);
+        $('cmp2_demo_pf').textContent    = dpf>=999?'∞':dpf?dpf.toFixed(2):'—';
+        $('cmp2_demo_dd').textContent    = ds.max_drawdown>0?'-$'+ds.max_drawdown.toFixed(2):'$0.00';
+        $('cmp2_live_pnl').textContent   = '$'+(ls.total_pnl||0).toFixed(2);
+        $('cmp2_live_pnl').style.color   = (ls.total_pnl||0)>=0?'#10b981':'#ef4444';
+        $('cmp2_live_wr').textContent    = (ls.win_rate||0)+'%';
+        $('cmp2_live_trades').textContent= (ls.total_trades||0).toLocaleString();
+        $('cmp2_live_rate').textContent  = (ls.trades_per_hour||0).toFixed(1);
+        $('cmp2_live_avg').textContent   = '$'+lavg.toFixed(4);
+        $('cmp2_live_pf').textContent    = lpf>=999?'∞':lpf?lpf.toFixed(2):'—';
+        $('cmp2_live_dd').textContent    = ls.max_drawdown>0?'-$'+ls.max_drawdown.toFixed(2):'$0.00';
+        // Compare chart
+        if (window.compareChart) {
+            const dseries=(ds.cum_pnl_series||[]);
+            const lseries=(ls.cum_pnl_series||[]);
+            if (dseries.length>0||lseries.length>0) {
+                const rate=Math.max(1,Math.floor(Math.max(dseries.length,lseries.length)/120));
+                const ds2=dseries.filter((_,i)=>i%rate===0);
+                const ls2=lseries.filter((_,i)=>i%rate===0);
+                window.compareChart.data.labels=ds2.map(p=>new Date(p.t||p).toLocaleTimeString());
+                window.compareChart.data.datasets[0].data=ds2.map(p=>p.v!=null?p.v:p);
+                window.compareChart.data.datasets[1].data=ls2.map(p=>p.v!=null?p.v:p);
+                window.compareChart.update('none');
+            }
+        }
+
         // Fills table
         const recent=liveTrades.slice(-10).reverse();
         const tbody=$('liveTradesTable').querySelector('tbody');
@@ -1103,6 +1269,7 @@ async function updateLiveDashboard() {
 window.addEventListener('load', () => {
     initChart();
     initLiveChart();
+    initCompareChart();
     updateDashboard();
     updateLiveStatus();
     updateLiveDashboard();
