@@ -430,27 +430,16 @@ async function updateDashboard() {
         const dd = s.max_drawdown;
         $('maxDrawdown').textContent = (dd != null && dd > 0) ? '-$' + dd.toFixed(2) : '$0.00';
 
-        // ── Chart: use cum_pnl_series from API, fallback to computing from trades ──
-        const net = s.total_pnl || 0;
-        let chartData = [], chartLabels = [];
+        // ── Chart: cumulative P&L series from stats API ──
+        const net    = s.total_pnl || 0;
         const series = s.cum_pnl_series || [];
         if (series.length > 0) {
-            const rate = Math.max(1, Math.floor(series.length / 120));
-            chartData   = series.filter((_,i) => i % rate === 0);
-            chartLabels = chartData.map((_,i) => i * rate);
-        } else if (trades.length > 0) {
-            // fallback: compute from individual trade pnl values
-            const rate = Math.max(1, Math.floor(trades.length / 120));
-            const sampled = trades.filter((_,i) => i % rate === 0);
-            let cum = 0;
-            chartLabels = sampled.map((_,i) => i * rate);
-            chartData   = sampled.map(t => { cum += (t.pnl || 0); return Math.round(cum * 10000) / 10000; });
-        }
-        if (chartData.length > 0) {
-            pnlChart.data.labels = chartLabels;
-            pnlChart.data.datasets[0].data = chartData;
-            pnlChart.data.datasets[0].borderColor = net >= 0 ? '#10b981' : '#ef4444';
-            pnlChart.data.datasets[0].backgroundColor = net >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+            const rate    = Math.max(1, Math.floor(series.length / 120));
+            const sampled = series.filter((_,i) => i % rate === 0);
+            pnlChart.data.labels = sampled.map((_,i) => i * rate);
+            pnlChart.data.datasets[0].data = sampled;
+            pnlChart.data.datasets[0].borderColor       = net >= 0 ? '#10b981' : '#ef4444';
+            pnlChart.data.datasets[0].backgroundColor   = net >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
             pnlChart.update('none');
         }
 

@@ -100,40 +100,130 @@ def set_request_status(email: str, status: str):
 
 
 def compute_stats_from_db(source: str = "demo") -> Optional[dict]:
-    """Calculate live stats directly from Supabase trades table."""
+    """Calculate comprehensive stats directly from Supabase trades table."""
     if not _sb:
         return None
     try:
         res = _sb.table("trades").select(
-            "pnl,win_window,synced_at"
+            "pnl,gross_pnl,fee,slippage,win_window,synced_at,confidence,side"
         ).eq("source", source).order("win_window", desc=False).execute()
         trades = res.data or []
         if not trades:
             return {"total_trades": 0, "wins": 0, "losses": 0, "win_rate": 0,
                     "total_pnl": 0, "elapsed_hours": 0, "trades_per_hour": 0,
-                    "rejected_trades": 0, "current_window": 0}
-        total = len(trades)
-        wins = sum(1 for t in trades if (t.get("pnl") or 0) > 0)
+                    "rejected_trades": 0, "current_window": 0,
+                    "cum_pnl_series": [], "hourly_pnl": {},
+                    "profit_factor": None, "max_drawdown": 0}
+
+        total      = len(trades)
+        pnls       = [t.get("pnl") or 0 for t in trades]
+        gross_pnls = [t.get("gross_pnl") or 0 for t in trades]
+        fees       = [t.get("fee") or 0 for t in trades]
+        slippages  = [t.get("slippage") or 0 for t in trades]
+        confs      = [t.get("confidence") or 0 for t in trades]
+
+        wins   = sum(1 for p in pnls if p > 0)
         losses = total - wins
-        total_pnl = sum(t.get("pnl") or 0 for t in trades)
-        # Estimate elapsed hours from first to last trade timestamp
+
+        # Elapsed time
         from datetime import datetime, timezone
+        import math
         try:
-            first = datetime.fromisoformat(trades[0]["synced_at"].replace("Z", "+00:00"))
-            last  = datetime.fromisoformat(trades[-1]["synced_at"].replace("Z", "+00:00"))
+            first   = datetime.fromisoformat(trades[0]["synced_at"].replace("Z", "+00:00"))
+            last    = datetime.fromisoformat(trades[-1]["synced_at"].replace("Z", "+00:00"))
             elapsed = max((last - first).total_seconds() / 3600, 0.01)
         except Exception:
             elapsed = 1.0
+
+        # Cumulative P&L & drawdown
+        cum, peak, max_dd = 0, 0, 0
+        cum_pnls = []
+        for p in pnls:
+            cum += p
+            cum_pnls.append(round(cum, 4))
+            if cum > peak:
+                peak = cum
+            dd = peak - cum
+            if dd > max_dd:
+                max_dd = dd
+
+        # Streaks
+        cur_streak, max_win_streak, max_loss_streak = 0, 0, 0
+        streak_type = None
+        cur_w, cur_l = 0, 0
+        for p in pnls:
+            if p > 0:
+                cur_w += 1; cur_l = 0
+                max_win_streak = max(max_win_streak, cur_w)
+                cur_streak = cur_w; streak_type = "win"
+            else:
+                cur_l += 1; cur_w = 0
+                max_loss_streak = max(max_loss_streak, cur_l)
+                cur_streak = cur_l; streak_type = "loss"
+
+        # Profit factor
+        gross_wins   = sum(p for p in pnls if p > 0)
+        gross_losses = abs(sum(p for p in pnls if p <= 0))
+        profit_factor = round(gross_wins / gross_losses, 2) if gross_losses > 0 else 999
+
+        # Sharpe (simplified daily)
+        import statistics
+        sharpe = 0
+        if len(pnls) > 1:
+            try:
+                avg_r = statistics.mean(pnls)
+                std_r = statistics.stdev(pnls)
+                sharpe = round((avg_r / std_r) * math.sqrt(252) if std_r > 0 else 0, 2)
+            except Exception:
+                sharpe = 0
+
+        # Hourly P&L buckets
+        hourly = {}
+        for t in trades:
+            try:
+                dt  = datetime.fromisoformat(t["synced_at"].replace("Z", "+00:00"))
+                key = dt.strftime("%H:00")
+                hourly[key] = round(hourly.get(key, 0) + (t.get("pnl") or 0), 4)
+            except Exception:
+                pass
+
+        # Side breakdown
+        buy_up   = [t for t in trades if t.get("side") == "BUY_UP"]
+        buy_down = [t for t in trades if t.get("side") == "BUY_DOWN"]
+
+        total_pnl = sum(pnls)
+
         return {
-            "total_trades":    total,
-            "wins":            wins,
-            "losses":          losses,
-            "win_rate":        round(wins / total * 100, 1),
-            "total_pnl":       round(total_pnl, 4),
-            "elapsed_hours":   round(elapsed, 2),
-            "trades_per_hour": round(total / elapsed, 1),
-            "rejected_trades": 0,
-            "current_window":  trades[-1].get("win_window", 0),
+            "total_trades":      total,
+            "wins":              wins,
+            "losses":            losses,
+            "win_rate":          round(wins / total * 100, 1),
+            "total_pnl":         round(total_pnl, 4),
+            "elapsed_hours":     round(elapsed, 2),
+            "trades_per_hour":   round(total / elapsed, 1),
+            "rejected_trades":   0,
+            "current_window":    trades[-1].get("win_window", 0),
+            # Extended stats
+            "avg_pnl":           round(total_pnl / total, 4),
+            "best_trade":        round(max(pnls), 4),
+            "worst_trade":       round(min(pnls), 4),
+            "max_drawdown":      round(max_dd, 4),
+            "total_fees":        round(sum(fees), 4),
+            "total_slippage":    round(sum(slippages), 4),
+            "total_gross_pnl":   round(sum(gross_pnls), 4),
+            "profit_factor":     profit_factor,
+            "sharpe_ratio":      sharpe,
+            "max_win_streak":    max_win_streak,
+            "max_loss_streak":   max_loss_streak,
+            "current_streak":    cur_streak,
+            "current_streak_type": streak_type,
+            "avg_confidence":    round(sum(confs) / len(confs), 1) if confs else 0,
+            "buy_up_count":      len(buy_up),
+            "buy_down_count":    len(buy_down),
+            "buy_up_wr":         round(sum(1 for t in buy_up if (t.get("pnl") or 0) > 0) / len(buy_up) * 100, 1) if buy_up else 0,
+            "buy_down_wr":       round(sum(1 for t in buy_down if (t.get("pnl") or 0) > 0) / len(buy_down) * 100, 1) if buy_down else 0,
+            "hourly_pnl":        hourly,
+            "cum_pnl_series":    cum_pnls,
         }
     except Exception as e:
         print(f"[DB] compute_stats error: {e}")
