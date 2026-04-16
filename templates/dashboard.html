@@ -20,572 +20,631 @@
 
         /* ── Top bar ── */
         .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 28px;
-            background: rgba(10, 14, 39, 0.95);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 28px; background: rgba(10,14,39,0.95);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            position: sticky; top: 0; z-index: 100; backdrop-filter: blur(20px);
         }
-
-        .topbar-brand {
-            font-size: 1.1em;
-            font-weight: 800;
+        .topbar-brand { font-size: 1.1em; font-weight: 800;
             background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .topbar-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.9em;
-            color: rgba(255,255,255,0.7);
-        }
-
-        .topbar-user img {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.15);
-        }
-
-        .topbar-user .avatar-fallback {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: rgba(99, 102, 241, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85em;
-            font-weight: 700;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.6);
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 0.85em;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .topbar-user { display: flex; align-items: center; gap: 12px; font-size: 0.9em; color: rgba(255,255,255,0.7); }
+        .topbar-user img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); }
+        .avatar-fallback { width: 32px; height: 32px; border-radius: 50%; background: rgba(99,102,241,0.4);
+            display: flex; align-items: center; justify-content: center; font-size: 0.85em; font-weight: 700; }
+        .logout-btn { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6); padding: 6px 14px; border-radius: 8px; font-size: 0.85em;
+            cursor: pointer; text-decoration: none; transition: background 0.2s; }
         .logout-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
 
         /* ── Tab nav ── */
-        .tab-nav {
-            display: flex;
-            gap: 0;
-            padding: 0 28px;
-            background: rgba(10, 14, 39, 0.8);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .tab-btn {
-            padding: 14px 24px;
-            font-size: 0.9em;
-            font-weight: 600;
-            color: rgba(255,255,255,0.45);
-            cursor: pointer;
-            border: none;
-            background: none;
-            border-bottom: 2px solid transparent;
-            margin-bottom: -1px;
-            transition: color 0.2s, border-color 0.2s;
-            font-family: 'Inter', sans-serif;
-        }
-
+        .tab-nav { display: flex; padding: 0 28px; background: rgba(10,14,39,0.8);
+            border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .tab-btn { padding: 14px 24px; font-size: 0.9em; font-weight: 600;
+            color: rgba(255,255,255,0.45); cursor: pointer; border: none; background: none;
+            border-bottom: 2px solid transparent; margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s; font-family: 'Inter', sans-serif; }
         .tab-btn:hover { color: rgba(255,255,255,0.75); }
         .tab-btn.active { color: #fff; border-bottom-color: #667eea; }
-
-        /* ── Tab content ── */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* ── Main dashboard layout (same as before) ── */
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 900;
+        /* ── Layout ── */
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 32px; }
+        .header h1 { font-size: 2.5em; font-weight: 900;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
 
-        .status-badges {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-top: 16px;
-        }
-
-        .badge {
-            background: rgba(255,255,255,0.05);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .badge.running {
-            background: rgba(16, 185, 129, 0.2);
-            border-color: #10b981;
-            animation: pulse 2s infinite;
-        }
-
+        /* ── Status badges ── */
+        .status-badges { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .badge { background: rgba(255,255,255,0.05); padding: 8px 18px; border-radius: 20px;
+            font-size: 0.88em; border: 1px solid rgba(255,255,255,0.1); }
+        .badge.running { background: rgba(16,185,129,0.2); border-color: #10b981; animation: pulse 2s infinite; }
+        .badge.trend-up { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: #10b981; }
+        .badge.trend-down { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #f87171; }
+        .badge.trend-neutral { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 24px;
-        }
+        /* ── Stat cards ── */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
 
-        .card {
-            background: rgba(17, 25, 54, 0.95);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 24px;
-            backdrop-filter: blur(20px);
-        }
+        .card { background: rgba(17,25,54,0.95); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px 22px; backdrop-filter: blur(20px); }
+        .card h3 { font-size: 0.78em; color: rgba(255,255,255,0.45); text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 10px; }
+        .card .value { font-size: 2.2em; font-weight: 800; margin-bottom: 6px; }
+        .card .value.sm { font-size: 1.7em; }
+        .card .sub { font-size: 0.85em; color: rgba(255,255,255,0.5); }
+        .card .trend { font-size: 0.8em; margin-top: 6px; }
 
-        .card h3 {
-            font-size: 0.85em;
-            color: rgba(255,255,255,0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .card .value { font-size: 2.5em; font-weight: 800; margin-bottom: 8px; }
-        .card .sub { font-size: 0.9em; color: rgba(255,255,255,0.6); }
+        /* Card accent borders */
+        .card.accent-green { border-left: 3px solid #10b981; }
+        .card.accent-red   { border-left: 3px solid #ef4444; }
+        .card.accent-blue  { border-left: 3px solid #667eea; }
+        .card.accent-amber { border-left: 3px solid #f59e0b; }
 
         .positive { color: #10b981; }
         .negative { color: #ef4444; }
         .neutral  { color: #fff; }
+        .muted    { color: rgba(255,255,255,0.45); }
+        .amber    { color: #f59e0b; }
+        .blue     { color: #667eea; }
 
-        .chart-card {
-            background: rgba(17, 25, 54, 0.95);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-        }
+        /* ── Streak badge ── */
+        .streak-badge { display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; border-radius: 20px; font-size: 0.82em; font-weight: 700; margin-top: 8px; }
+        .streak-win  { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+        .streak-loss { background: rgba(239,68,68,0.2);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
 
-        .chart-card h3 { font-size: 1.2em; margin-bottom: 20px; }
+        /* ── Side breakdown ── */
+        .side-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .side-label { width: 90px; font-size: 0.82em; color: rgba(255,255,255,0.6); }
+        .side-bar-bg { flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.07); overflow: hidden; }
+        .side-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+        .side-bar-fill.up   { background: linear-gradient(90deg, #667eea, #10b981); }
+        .side-bar-fill.down { background: linear-gradient(90deg, #f59e0b, #764ba2); }
+        .side-val { width: 50px; text-align: right; font-size: 0.82em; font-weight: 700; }
 
-        .chart-container { position: relative; height: 300px; }
+        /* ── Charts ── */
+        .chart-card { background: rgba(17,25,54,0.95); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .chart-card h3 { font-size: 1.15em; margin-bottom: 18px; }
+        .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .chart-container { position: relative; height: 280px; }
+        .chart-container.short { height: 200px; }
 
-        .comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 24px;
-        }
-
-        .comparison-card {
-            background: rgba(17, 25, 54, 0.95);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .comparison-card h3 { font-size: 1.3em; margin-bottom: 20px; text-align: center; }
-
-        .metric-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .metric-label { color: rgba(255,255,255,0.6); }
+        /* ── Comparison ── */
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .comparison-card { background: rgba(17,25,54,0.95); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 24px; }
+        .comparison-card h3 { font-size: 1.2em; margin-bottom: 18px; text-align: center; }
+        .metric-row { display: flex; justify-content: space-between; padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .metric-label { color: rgba(255,255,255,0.55); font-size: 0.9em; }
         .metric-value { font-weight: 700; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        th { color: rgba(255,255,255,0.5); font-size: 0.85em; text-transform: uppercase; }
+        /* ── Fee impact ── */
+        .fee-row { display: flex; gap: 16px; margin-bottom: 20px; }
+        .fee-item { flex: 1; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15);
+            border-radius: 12px; padding: 16px; text-align: center; }
+        .fee-item .fl { font-size: 0.78em; color: rgba(255,255,255,0.45); text-transform: uppercase;
+            letter-spacing: 0.5px; margin-bottom: 6px; }
+        .fee-item .fv { font-size: 1.5em; font-weight: 800; color: #f87171; }
 
-        .projections {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 16px;
-            padding: 24px;
-            margin-top: 24px;
-        }
+        /* ── Projections ── */
+        .projections { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 16px; padding: 24px; margin-top: 20px; }
+        .projections h3 { font-size: 1.2em; margin-bottom: 18px; color: #10b981; }
+        .projection-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+        .projection-item { background: rgba(0,0,0,0.2); padding: 14px; border-radius: 12px; text-align: center; }
+        .projection-item .label { font-size: 0.85em; color: rgba(255,255,255,0.55); margin-bottom: 6px; }
+        .projection-item .value { font-size: 1.4em; font-weight: 700; color: #10b981; }
 
-        .projections h3 { font-size: 1.3em; margin-bottom: 20px; color: #10b981; }
+        /* ── Trades table ── */
+        table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+        th, td { padding: 11px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.88em; }
+        th { color: rgba(255,255,255,0.45); font-size: 0.8em; text-transform: uppercase; }
 
-        .projection-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-
-        .projection-item {
-            background: rgba(0,0,0,0.2);
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-        }
-
-        .projection-item .label { font-size: 0.9em; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
-        .projection-item .value { font-size: 1.5em; font-weight: 700; color: #10b981; }
-
-        /* ── Live Trading placeholder ── */
-        .coming-soon {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            text-align: center;
-            padding: 40px;
-        }
-
+        /* ── Offline / coming soon ── */
+        .offline-banner { display: none; background: rgba(245,158,11,0.15);
+            border: 1px solid rgba(245,158,11,0.4); color: #fbbf24; padding: 10px 20px;
+            text-align: center; font-size: 0.9em; }
+        .coming-soon { display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 60vh; text-align: center; padding: 40px; }
         .coming-soon .icon { font-size: 4em; margin-bottom: 24px; }
-        .coming-soon h2 { font-size: 2em; font-weight: 800; margin-bottom: 12px; color: rgba(255,255,255,0.9); }
+        .coming-soon h2 { font-size: 2em; font-weight: 800; margin-bottom: 12px; }
         .coming-soon p  { font-size: 1.05em; color: rgba(255,255,255,0.5); max-width: 480px; line-height: 1.7; }
+        .coming-soon .tag { display: inline-block; background: rgba(99,102,241,0.2);
+            border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; padding: 6px 16px;
+            border-radius: 20px; font-size: 0.85em; font-weight: 600; margin-top: 24px; }
 
-        .coming-soon .tag {
-            display: inline-block;
-            background: rgba(99, 102, 241, 0.2);
-            border: 1px solid rgba(99, 102, 241, 0.4);
-            color: #a5b4fc;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-top: 24px;
-        }
+        /* ── Section divider ── */
+        .section-label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.3); margin-bottom: 12px; margin-top: 8px; }
 
-        /* ── Offline banner ── */
-        .offline-banner {
-            display: none;
-            background: rgba(245, 158, 11, 0.15);
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            color: #fbbf24;
-            padding: 10px 20px;
-            text-align: center;
-            font-size: 0.9em;
-        }
-
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
+            .grid-5 { grid-template-columns: repeat(3, 1fr); }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
             .comparison { grid-template-columns: 1fr; }
+            .chart-row { grid-template-columns: 1fr; }
             .header h1 { font-size: 1.8em; }
             .topbar-user .name { display: none; }
+        }
+        @media (max-width: 600px) {
+            .grid-5, .grid-4 { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
 <body>
 
-    <!-- Top bar -->
-    <div class="topbar">
-        <div class="topbar-brand">📈 Trading Dashboard</div>
-        <div class="topbar-user">
-            {% if user.picture %}
-                <img src="{{ user.picture }}" alt="{{ user.name }}">
-            {% else %}
-                <div class="avatar-fallback">{{ user.name[0] | upper }}</div>
-            {% endif %}
-            <span class="name">{{ user.name }}</span>
-            {% if is_admin %}<a href="/admin" class="logout-btn" style="border-color:rgba(99,102,241,0.4);color:#a5b4fc;">⚙️ Admin</a>{% endif %}
-            <a href="/logout" class="logout-btn">Sign out</a>
+<!-- Top bar -->
+<div class="topbar">
+    <div class="topbar-brand">📈 Trading Dashboard</div>
+    <div class="topbar-user">
+        {% if user.picture %}
+            <img src="{{ user.picture }}" alt="{{ user.name }}">
+        {% else %}
+            <div class="avatar-fallback">{{ user.name[0] | upper }}</div>
+        {% endif %}
+        <span class="name">{{ user.name }}</span>
+        {% if is_admin %}<a href="/admin" class="logout-btn" style="border-color:rgba(99,102,241,0.4);color:#a5b4fc;">⚙️ Admin</a>{% endif %}
+        <a href="/logout" class="logout-btn">Sign out</a>
+    </div>
+</div>
+
+<!-- Offline banner -->
+<div class="offline-banner" id="offlineBanner">
+    ⚠️ Simulation offline — showing last saved data from database
+</div>
+
+<!-- Tab navigation -->
+<div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('week1', this)">📊 Week 1 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('live', this)">🔴 Live Trading</button>
+</div>
+
+<!-- ═══════════ TAB: Week 1 Dashboard ═══════════ -->
+<div id="tab-week1" class="tab-content active">
+<div class="container">
+
+    <div class="header">
+        <h1>🚀 Week 1 Production Simulation</h1>
+        <p style="color:rgba(255,255,255,0.7);font-size:1.05em;">12-Hour Live Test · Phase 1 &amp; 2 Fixes</p>
+        <div class="status-badges">
+            <div class="badge running" id="statusBadge">● SIMULATION RUNNING</div>
+            <div class="badge">⏱️ Elapsed: <strong id="elapsed">0h 0m</strong></div>
+            <div class="badge">🎯 Target: 12 hours</div>
+            <div class="badge trend-neutral" id="trend1h">📊 Last 1h: —</div>
+            <div class="badge trend-neutral" id="trend24h">📅 24h proj: —</div>
         </div>
     </div>
 
-    <!-- Offline banner (shown when simulation is offline) -->
-    <div class="offline-banner" id="offlineBanner">
-        ⚠️ Simulation offline — showing last saved data from database
-    </div>
-
-    <!-- Tab navigation -->
-    <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('week1', this)">📊 Week 1 Dashboard</button>
-        <button class="tab-btn" onclick="switchTab('live', this)">🔴 Live Trading</button>
-    </div>
-
-    <!-- ═══════════════ TAB: Week 1 Dashboard ═══════════════ -->
-    <div id="tab-week1" class="tab-content active">
-        <div class="container">
-            <div class="header">
-                <h1>🚀 Week 1 Production Simulation</h1>
-                <p style="color: rgba(255,255,255,0.7); font-size: 1.1em;">12-Hour Live Test with Phase 1 &amp; 2 Fixes</p>
-
-                <div class="status-badges">
-                    <div class="badge running" id="statusBadge">● SIMULATION RUNNING</div>
-                    <div class="badge">⏱️ Elapsed: <strong id="elapsed">0h 0m</strong></div>
-                    <div class="badge">🎯 Target: 12 hours</div>
-                </div>
-            </div>
-
-            <!-- Key Metrics -->
-            <div class="grid">
-                <div class="card">
-                    <h3>Total P&amp;L</h3>
-                    <div class="value positive" id="totalPnl">$0.00</div>
-                    <div class="sub" id="pnlPerHour">$0/hour</div>
-                </div>
-                <div class="card">
-                    <h3>Win Rate</h3>
-                    <div class="value neutral" id="winRate">0%</div>
-                    <div class="sub" id="winStats">0 wins / 0 losses</div>
-                </div>
-                <div class="card">
-                    <h3>Total Trades</h3>
-                    <div class="value neutral" id="totalTrades">0</div>
-                    <div class="sub" id="tradeRate">0/hour</div>
-                </div>
-                <div class="card">
-                    <h3>Avg P&amp;L / Trade</h3>
-                    <div class="value neutral" id="avgPnl">$0.00</div>
-                    <div class="sub" id="rejectedTrades">0 rejected</div>
-                </div>
-            </div>
-
-            <!-- P&L Chart -->
-            <div class="chart-card">
-                <h3>📈 Cumulative P&amp;L Over Time</h3>
-                <div class="chart-container">
-                    <canvas id="pnlChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Comparison: Old vs New -->
-            <div class="comparison">
-                <div class="comparison-card">
-                    <h3>❌ OLD (10-Hour Test)</h3>
-                    <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value">8,756</span></div>
-                    <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value negative">876</span></div>
-                    <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value">74.3%</span></div>
-                    <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value positive">$227.00</span></div>
-                    <div class="metric-row"><span class="metric-label">Avg P&amp;L/Trade</span><span class="metric-value">$0.026</span></div>
-                    <div class="metric-row"><span class="metric-label">Issues</span><span class="metric-value negative">Overtrading 5.8x</span></div>
-                </div>
-                <div class="comparison-card">
-                    <h3>✅ NEW (Week 1 Sim)</h3>
-                    <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value" id="comp_trades">0</span></div>
-                    <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value" id="comp_rate">0</span></div>
-                    <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value" id="comp_wr">0%</span></div>
-                    <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value" id="comp_pnl">$0.00</span></div>
-                    <div class="metric-row"><span class="metric-label">Avg P&amp;L/Trade</span><span class="metric-value" id="comp_avg">$0.00</span></div>
-                    <div class="metric-row"><span class="metric-label">Improvements</span><span class="metric-value positive" id="comp_improvements">Calculating...</span></div>
-                </div>
-            </div>
-
-            <!-- Projections -->
-            <div class="projections">
-                <h3>💰 Profit Projections (Based on Current Performance)</h3>
-                <div class="projection-grid">
-                    <div class="projection-item"><div class="label">Daily ($1 bets)</div><div class="value" id="proj_daily_1">$0</div></div>
-                    <div class="projection-item"><div class="label">Monthly ($1 bets)</div><div class="value" id="proj_monthly_1">$0</div></div>
-                    <div class="projection-item"><div class="label">Daily ($5 bets)</div><div class="value" id="proj_daily_5">$0</div></div>
-                    <div class="projection-item"><div class="label">Monthly ($5 bets)</div><div class="value" id="proj_monthly_5">$0</div></div>
-                    <div class="projection-item"><div class="label">Daily ($10 bets)</div><div class="value" id="proj_daily_10">$0</div></div>
-                    <div class="projection-item"><div class="label">Monthly ($10 bets)</div><div class="value" id="proj_monthly_10">$0</div></div>
-                </div>
-            </div>
-
-            <!-- Recent Trades -->
-            <div class="chart-card" style="margin-top: 24px;">
-                <h3>📜 Recent Trades (Last 10)</h3>
-                <table id="tradesTable">
-                    <thead>
-                        <tr>
-                            <th>Time</th><th>Side</th><th>Entry</th><th>Exit</th>
-                            <th>Gross</th><th>Fee</th><th>Slippage</th><th>Net P&amp;L</th><th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.5);">Waiting for trades...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- ── Row 1: Core metrics ── -->
+    <div class="section-label">Core Performance</div>
+    <div class="grid">
+        <div class="card accent-green">
+            <h3>Total P&amp;L</h3>
+            <div class="value positive" id="totalPnl">$0.00</div>
+            <div class="sub" id="pnlPerHour">$0.00/hour</div>
+            <div class="trend" id="grossVsNet" style="color:rgba(255,255,255,0.35)"></div>
+        </div>
+        <div class="card">
+            <h3>Win Rate</h3>
+            <div class="value neutral" id="winRate">0%</div>
+            <div class="sub" id="winStats">0 wins / 0 losses</div>
+        </div>
+        <div class="card">
+            <h3>Total Trades</h3>
+            <div class="value neutral" id="totalTrades">0</div>
+            <div class="sub" id="tradeRate">0/hour</div>
+        </div>
+        <div class="card">
+            <h3>Avg P&amp;L / Trade</h3>
+            <div class="value neutral sm" id="avgPnl">$0.0000</div>
+            <div class="sub" id="avgConfidence">Avg confidence: —</div>
         </div>
     </div>
 
-    <!-- ═══════════════ TAB: Live Trading ═══════════════ -->
-    <div id="tab-live" class="tab-content">
-        <div class="coming-soon">
-            <div class="icon">🔴</div>
-            <h2>Live Trading</h2>
-            <p>Real-time trade execution and position management will appear here once the live trading module is connected.</p>
-            <div class="tag">Coming next</div>
+    <!-- ── Row 2: Risk & quality metrics ── -->
+    <div class="section-label">Risk &amp; Quality</div>
+    <div class="grid-5">
+        <div class="card accent-red">
+            <h3>Max Drawdown</h3>
+            <div class="value sm negative" id="maxDrawdown">$0.00</div>
+            <div class="sub">Peak-to-trough</div>
+        </div>
+        <div class="card accent-blue">
+            <h3>Profit Factor</h3>
+            <div class="value sm" id="profitFactor" style="color:#667eea">0.00</div>
+            <div class="sub">Gross wins / losses</div>
+        </div>
+        <div class="card accent-blue">
+            <h3>Sharpe Ratio</h3>
+            <div class="value sm" id="sharpeRatio" style="color:#667eea">0.00</div>
+            <div class="sub">Annualized (252)</div>
+        </div>
+        <div class="card accent-green">
+            <h3>Best Trade</h3>
+            <div class="value sm positive" id="bestTrade">$0.00</div>
+            <div class="sub">Single trade max</div>
+        </div>
+        <div class="card accent-red">
+            <h3>Worst Trade</h3>
+            <div class="value sm negative" id="worstTrade">$0.00</div>
+            <div class="sub">Single trade min</div>
         </div>
     </div>
 
-    <script>
-        // ── Tab switching ──────────────────────────────────────────────────────
-        function switchTab(name, btn) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + name).classList.add('active');
-            btn.classList.add('active');
+    <!-- ── Row 3: Streaks + Side breakdown ── -->
+    <div class="section-label">Streaks &amp; Direction</div>
+    <div class="grid-4">
+        <div class="card">
+            <h3>Current Streak</h3>
+            <div class="value sm neutral" id="curStreak">0</div>
+            <div id="streakBadge"></div>
+        </div>
+        <div class="card">
+            <h3>Max Win Streak</h3>
+            <div class="value sm positive" id="maxWinStreak">0</div>
+            <div class="sub">Consecutive wins</div>
+        </div>
+        <div class="card">
+            <h3>Max Loss Streak</h3>
+            <div class="value sm negative" id="maxLossStreak">0</div>
+            <div class="sub">Consecutive losses</div>
+        </div>
+        <div class="card" id="sideCard">
+            <h3>Direction Breakdown</h3>
+            <div class="side-row" style="margin-top:6px">
+                <span class="side-label">BUY_UP</span>
+                <div class="side-bar-bg"><div class="side-bar-fill up" id="barUp" style="width:0%"></div></div>
+                <span class="side-val positive" id="wrUp">0%</span>
+            </div>
+            <div class="side-row">
+                <span class="side-label">BUY_DOWN</span>
+                <div class="side-bar-bg"><div class="side-bar-fill down" id="barDown" style="width:0%"></div></div>
+                <span class="side-val amber" id="wrDown">0%</span>
+            </div>
+            <div class="sub" id="sideCount" style="margin-top:4px"></div>
+        </div>
+    </div>
+
+    <!-- ── Fee Impact ── -->
+    <div class="section-label">Fee Impact</div>
+    <div class="fee-row">
+        <div class="fee-item">
+            <div class="fl">Gross P&amp;L</div>
+            <div class="fv" id="feeGross" style="color:#10b981">$0.00</div>
+        </div>
+        <div class="fee-item">
+            <div class="fl">Total Fees</div>
+            <div class="fv" id="feeFees">-$0.00</div>
+        </div>
+        <div class="fee-item">
+            <div class="fl">Total Slippage</div>
+            <div class="fv" id="feeSlippage">-$0.00</div>
+        </div>
+        <div class="fee-item" style="background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2)">
+            <div class="fl">Net P&amp;L</div>
+            <div class="fv" id="feeNet" style="color:#10b981">$0.00</div>
+        </div>
+        <div class="fee-item" style="background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.1)">
+            <div class="fl">Cost Drag</div>
+            <div class="fv" id="feeDrag">0%</div>
+        </div>
+    </div>
+
+    <!-- ── Charts ── -->
+    <div class="chart-row">
+        <div class="chart-card">
+            <h3>📈 Cumulative P&amp;L</h3>
+            <div class="chart-container"><canvas id="pnlChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+            <h3>🕐 Hourly P&amp;L</h3>
+            <div class="chart-container"><canvas id="hourlyChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- ── Comparison: Old vs New ── -->
+    <div class="section-label">Benchmark Comparison</div>
+    <div class="comparison">
+        <div class="comparison-card">
+            <h3>❌ OLD (10-Hour Test)</h3>
+            <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value">8,756</span></div>
+            <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value negative">876</span></div>
+            <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value">74.3%</span></div>
+            <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value positive">$227.00</span></div>
+            <div class="metric-row"><span class="metric-label">Avg P&amp;L/Trade</span><span class="metric-value">$0.026</span></div>
+            <div class="metric-row"><span class="metric-label">Issues</span><span class="metric-value negative">Overtrading 5.8x</span></div>
+        </div>
+        <div class="comparison-card">
+            <h3>✅ NEW (Week 1 Sim)</h3>
+            <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value" id="comp_trades">0</span></div>
+            <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value" id="comp_rate">0</span></div>
+            <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value" id="comp_wr">0%</span></div>
+            <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value" id="comp_pnl">$0.00</span></div>
+            <div class="metric-row"><span class="metric-label">Avg P&amp;L/Trade</span><span class="metric-value" id="comp_avg">$0.00</span></div>
+            <div class="metric-row"><span class="metric-label">Status</span><span class="metric-value positive" id="comp_status">Calculating...</span></div>
+        </div>
+    </div>
+
+    <!-- ── Projections ── -->
+    <div class="projections">
+        <h3>💰 Profit Projections (Based on Current Rate)</h3>
+        <div class="projection-grid">
+            <div class="projection-item"><div class="label">Daily ($1 bets)</div><div class="value" id="proj_daily_1">$0</div></div>
+            <div class="projection-item"><div class="label">Monthly ($1 bets)</div><div class="value" id="proj_monthly_1">$0</div></div>
+            <div class="projection-item"><div class="label">Daily ($5 bets)</div><div class="value" id="proj_daily_5">$0</div></div>
+            <div class="projection-item"><div class="label">Monthly ($5 bets)</div><div class="value" id="proj_monthly_5">$0</div></div>
+            <div class="projection-item"><div class="label">Daily ($10 bets)</div><div class="value" id="proj_daily_10">$0</div></div>
+            <div class="projection-item"><div class="label">Monthly ($10 bets)</div><div class="value" id="proj_monthly_10">$0</div></div>
+        </div>
+    </div>
+
+    <!-- ── Recent Trades ── -->
+    <div class="chart-card" style="margin-top:20px">
+        <h3>📜 Recent Trades (Last 10)</h3>
+        <table id="tradesTable">
+            <thead>
+                <tr>
+                    <th>Time</th><th>Side</th><th>Entry</th><th>Exit</th>
+                    <th>Gross</th><th>Fee</th><th>Slip</th><th>Net P&amp;L</th><th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.4)">Waiting for trades...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div><!-- /container -->
+</div><!-- /tab-week1 -->
+
+<!-- ═══════════ TAB: Live Trading ═══════════ -->
+<div id="tab-live" class="tab-content">
+    <div class="coming-soon">
+        <div class="icon">🔴</div>
+        <h2>Live Trading</h2>
+        <p>Real-time trade execution and position management will appear here once the live trading module is connected.</p>
+        <div class="tag">Coming next</div>
+    </div>
+</div>
+
+<script>
+// ── Tab switching ──────────────────────────────────────────────
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── Charts ────────────────────────────────────────────────────
+let pnlChart = null, hourlyChart = null;
+
+function initCharts() {
+    const baseOpts = {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.4)', maxTicksLimit: 8 } },
+            y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.4)', callback: v => '$' + v.toFixed(2) } }
+        }
+    };
+
+    pnlChart = new Chart(document.getElementById('pnlChart').getContext('2d'), {
+        type: 'line',
+        data: { labels: [], datasets: [{ label: 'Cum P&L', data: [], borderColor: '#10b981',
+            backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2.5, fill: true, tension: 0.4, pointRadius: 0 }] },
+        options: { ...baseOpts }
+    });
+
+    hourlyChart = new Chart(document.getElementById('hourlyChart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: [], datasets: [{ label: 'Hourly P&L', data: [],
+            backgroundColor: ctx => ctx.raw >= 0 ? 'rgba(16,185,129,0.6)' : 'rgba(239,68,68,0.6)',
+            borderColor: ctx => ctx.raw >= 0 ? '#10b981' : '#ef4444',
+            borderWidth: 1, borderRadius: 4 }] },
+        options: { ...baseOpts }
+    });
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const fmt  = (v, d=2) => '$' + Math.abs(v).toFixed(d);
+const fmtS = (v, d=2) => (v >= 0 ? '+$' : '-$') + Math.abs(v).toFixed(d);
+const fmtN = (v, d=4) => (v >= 0 ? '+' : '') + v.toFixed(d);
+
+function colorClass(v) { return v > 0 ? 'positive' : v < 0 ? 'negative' : 'neutral'; }
+
+// ── Main update ───────────────────────────────────────────────
+async function updateDashboard() {
+    try {
+        const [statsRes, tradesRes] = await Promise.all([
+            fetch('/api/week1_stats'),
+            fetch('/api/week1_trades'),
+        ]);
+        if (statsRes.status === 401 || tradesRes.status === 401) {
+            window.location.href = '/login-page'; return;
         }
 
-        // ── Chart ─────────────────────────────────────────────────────────────
-        let pnlChart = null;
+        const s  = await statsRes.json();
+        const td = await tradesRes.json();
+        const trades = td.all_trades || [];
 
-        function initChart() {
-            const ctx = document.getElementById('pnlChart').getContext('2d');
-            pnlChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Cumulative P&L',
-                        data: [],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)' } },
-                        y: {
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: 'rgba(255,255,255,0.5)', callback: v => '$' + v.toFixed(2) }
-                        }
-                    }
-                }
-            });
+        $('offlineBanner').style.display = s._offline ? 'block' : 'none';
+
+        // ── Status badges ──
+        const elapsed_h = Math.floor(s.elapsed_hours || 0);
+        const elapsed_m = Math.floor(((s.elapsed_hours || 0) - elapsed_h) * 60);
+        $('elapsed').textContent = elapsed_h + 'h ' + elapsed_m + 'm';
+        if (!s.total_trades) $('statusBadge').textContent = '● WAITING FOR DATA';
+
+        // ── Trend badges: last 1h and 24h projection ──
+        const hourly = s.hourly_pnl || {};
+        const hours  = Object.keys(hourly).sort();
+        const last1h = hours.length > 0 ? (hourly[hours[hours.length - 1]] || 0) : null;
+        const pphRate = s.elapsed_hours > 0 ? (s.total_pnl / s.elapsed_hours) : 0;
+
+        if (last1h !== null) {
+            const b1 = $('trend1h');
+            b1.textContent = '📊 Last 1h: ' + fmtS(last1h);
+            b1.className = 'badge ' + (last1h >= 0 ? 'trend-up' : 'trend-down');
+        }
+        const proj24 = pphRate * 24;
+        const b24 = $('trend24h');
+        b24.textContent = '📅 24h proj: ' + fmtS(proj24);
+        b24.className = 'badge ' + (proj24 >= 0 ? 'trend-up' : 'trend-down');
+
+        // ── Core metrics ──
+        const pnlEl = $('totalPnl');
+        pnlEl.textContent = '$' + (s.total_pnl || 0).toFixed(2);
+        pnlEl.className = 'value ' + colorClass(s.total_pnl);
+        $('pnlPerHour').textContent = fmtS(pphRate) + '/hour';
+        $('grossVsNet').textContent = 'Gross: $' + (s.total_gross_pnl || 0).toFixed(2);
+
+        $('winRate').textContent = (s.win_rate || 0) + '%';
+        $('winStats').textContent = (s.wins || 0) + ' wins / ' + (s.losses || 0) + ' losses';
+        $('totalTrades').textContent = (s.total_trades || 0).toLocaleString();
+        $('tradeRate').textContent = (s.trades_per_hour || 0).toFixed(1) + '/hour';
+
+        const avg = s.avg_pnl || (s.total_trades > 0 ? s.total_pnl / s.total_trades : 0);
+        const avgEl = $('avgPnl');
+        avgEl.textContent = '$' + avg.toFixed(4);
+        avgEl.className = 'value sm ' + colorClass(avg);
+        $('avgConfidence').textContent = 'Avg confidence: ' + (s.avg_confidence || 0).toFixed(1) + '%';
+
+        // ── Risk & quality ──
+        $('maxDrawdown').textContent = '-$' + (s.max_drawdown || 0).toFixed(2);
+
+        const pf = s.profit_factor || 0;
+        const pfEl = $('profitFactor');
+        pfEl.textContent = pf >= 999 ? '∞' : pf.toFixed(2);
+        pfEl.style.color = pf >= 1.5 ? '#10b981' : pf >= 1 ? '#f59e0b' : '#ef4444';
+
+        const sr = s.sharpe_ratio || 0;
+        const srEl = $('sharpeRatio');
+        srEl.textContent = sr.toFixed(2);
+        srEl.style.color = sr >= 1 ? '#10b981' : sr >= 0 ? '#f59e0b' : '#ef4444';
+
+        const bestEl = $('bestTrade');
+        bestEl.textContent = '+$' + (s.best_trade || 0).toFixed(4);
+        const worstEl = $('worstTrade');
+        worstEl.textContent = '-$' + Math.abs(s.worst_trade || 0).toFixed(4);
+
+        // ── Streaks ──
+        $('curStreak').textContent = s.current_streak || 0;
+        $('maxWinStreak').textContent = s.max_win_streak || 0;
+        $('maxLossStreak').textContent = s.max_loss_streak || 0;
+        const sb = $('streakBadge');
+        if (s.current_streak > 0) {
+            const cls = s.current_streak_type === 'win' ? 'streak-win' : 'streak-loss';
+            const lbl = s.current_streak_type === 'win' ? '🔥 Win streak' : '❄️ Loss streak';
+            sb.innerHTML = `<span class="streak-badge ${cls}">${lbl}</span>`;
+        } else { sb.innerHTML = ''; }
+
+        // ── Side breakdown ──
+        const wUp   = s.buy_up_wr   || 0;
+        const wDown = s.buy_down_wr || 0;
+        $('wrUp').textContent   = wUp.toFixed(1)   + '%';
+        $('wrDown').textContent = wDown.toFixed(1)  + '%';
+        $('barUp').style.width   = wUp   + '%';
+        $('barDown').style.width = wDown + '%';
+        $('sideCount').textContent =
+            'UP: ' + (s.buy_up_count || 0) + ' trades  ·  DOWN: ' + (s.buy_down_count || 0) + ' trades';
+
+        // ── Fee impact ──
+        const gross    = s.total_gross_pnl || 0;
+        const fees     = s.total_fees      || 0;
+        const slip     = s.total_slippage  || 0;
+        const net      = s.total_pnl       || 0;
+        const drag     = gross > 0 ? ((fees + slip) / gross * 100) : 0;
+        $('feeGross').textContent   = '+$' + gross.toFixed(2);
+        $('feeFees').textContent    = '-$' + fees.toFixed(2);
+        $('feeSlippage').textContent= '-$' + slip.toFixed(2);
+        const feeNetEl = $('feeNet');
+        feeNetEl.textContent = (net >= 0 ? '+$' : '-$') + Math.abs(net).toFixed(2);
+        feeNetEl.style.color = net >= 0 ? '#10b981' : '#ef4444';
+        $('feeDrag').textContent = drag.toFixed(1) + '%';
+
+        // ── Cumulative P&L chart ──
+        const cumSeries = s.cum_pnl_series || [];
+        if (cumSeries.length > 0) {
+            const rate = Math.max(1, Math.floor(cumSeries.length / 120));
+            const sampled = cumSeries.filter((_, i) => i % rate === 0);
+            pnlChart.data.labels   = sampled.map((_, i) => i * rate);
+            pnlChart.data.datasets[0].data = sampled;
+            pnlChart.data.datasets[0].borderColor = net >= 0 ? '#10b981' : '#ef4444';
+            pnlChart.data.datasets[0].backgroundColor = net >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+            pnlChart.update('none');
         }
 
-        // ── Dashboard update ───────────────────────────────────────────────────
-        async function updateDashboard() {
-            try {
-                const [statsRes, tradesRes] = await Promise.all([
-                    fetch('/api/week1_stats'),
-                    fetch('/api/week1_trades'),
-                ]);
-
-                // Handle auth expiry
-                if (statsRes.status === 401 || tradesRes.status === 401) {
-                    window.location.href = '/login-page';
-                    return;
-                }
-
-                const stats  = await statsRes.json();
-                const tData  = await tradesRes.json();
-                const trades = tData.all_trades || [];
-
-                // Offline indicator
-                document.getElementById('offlineBanner').style.display =
-                    stats._offline ? 'block' : 'none';
-
-                // ── Stats ──
-                const pnlEl = document.getElementById('totalPnl');
-                pnlEl.textContent = '$' + stats.total_pnl.toFixed(2);
-                pnlEl.className = 'value ' + (stats.total_pnl > 0 ? 'positive' : stats.total_pnl < 0 ? 'negative' : 'neutral');
-
-                const pnlPerHour = stats.elapsed_hours > 0 ? stats.total_pnl / stats.elapsed_hours : 0;
-                document.getElementById('pnlPerHour').textContent = '$' + pnlPerHour.toFixed(2) + '/hour';
-
-                document.getElementById('winRate').textContent = stats.win_rate + '%';
-                document.getElementById('winStats').textContent = stats.wins + ' wins / ' + stats.losses + ' losses';
-                document.getElementById('totalTrades').textContent = stats.total_trades.toLocaleString();
-                document.getElementById('tradeRate').textContent = stats.trades_per_hour.toFixed(0) + '/hour';
-
-                const avgPnl = stats.total_trades > 0 ? stats.total_pnl / stats.total_trades : 0;
-                document.getElementById('avgPnl').textContent = '$' + avgPnl.toFixed(4);
-                document.getElementById('rejectedTrades').textContent = stats.rejected_trades + ' rejected';
-
-                const hours   = Math.floor(stats.elapsed_hours);
-                const minutes = Math.floor((stats.elapsed_hours - hours) * 60);
-                document.getElementById('elapsed').textContent = hours + 'h ' + minutes + 'm';
-
-                // ── Comparison ──
-                document.getElementById('comp_trades').textContent = stats.total_trades.toLocaleString();
-                document.getElementById('comp_rate').textContent = stats.trades_per_hour.toFixed(0);
-                document.getElementById('comp_rate').className = 'metric-value ' + (stats.trades_per_hour <= 150 ? 'positive' : 'negative');
-                document.getElementById('comp_wr').textContent = stats.win_rate + '%';
-                document.getElementById('comp_pnl').textContent = '$' + stats.total_pnl.toFixed(2);
-                document.getElementById('comp_pnl').className = 'metric-value ' + (stats.total_pnl > 0 ? 'positive' : 'negative');
-                document.getElementById('comp_avg').textContent = '$' + avgPnl.toFixed(4);
-
-                if (stats.trades_per_hour <= 150 && stats.total_trades > 10)
-                    document.getElementById('comp_improvements').textContent = '✅ Rate optimized';
-                else if (stats.trades_per_hour > 150)
-                    document.getElementById('comp_improvements').textContent = '⚠️ Still high';
-
-                // ── Projections ──
-                const daily  = pnlPerHour * 24;
-                const monthly = daily * 30;
-                document.getElementById('proj_daily_1').textContent   = '$' + (daily   * 1).toFixed(2);
-                document.getElementById('proj_monthly_1').textContent = '$' + (monthly * 1).toFixed(2);
-                document.getElementById('proj_daily_5').textContent   = '$' + (daily   * 5).toFixed(2);
-                document.getElementById('proj_monthly_5').textContent = '$' + (monthly * 5).toFixed(2);
-                document.getElementById('proj_daily_10').textContent  = '$' + (daily  * 10).toFixed(2);
-                document.getElementById('proj_monthly_10').textContent= '$' + (monthly* 10).toFixed(2);
-
-                // ── Chart ──
-                if (trades.length > 0) {
-                    const sampleRate = Math.max(1, Math.floor(trades.length / 100));
-                    const sampled = trades.filter((_, i) => i % sampleRate === 0);
-                    let cumPnl = 0;
-                    pnlChart.data.labels = sampled.map((_, i) => i);
-                    pnlChart.data.datasets[0].data = sampled.map(t => { cumPnl += t.pnl; return cumPnl; });
-                    pnlChart.update('none');
-                }
-
-                // ── Recent trades table ──
-                const recent = trades.slice(-10).reverse();
-                const tbody  = document.getElementById('tradesTable').querySelector('tbody');
-                if (recent.length > 0) {
-                    tbody.innerHTML = recent.map(t => `
-                        <tr>
-                            <td>${(t.timestamp || '').split(' ')[1] || t.timestamp}</td>
-                            <td>${t.side}</td>
-                            <td>${(t.entry_price || 0).toFixed(3)}</td>
-                            <td>${(t.exit_price  || 0).toFixed(3)}</td>
-                            <td>$${(t.gross_pnl  || 0).toFixed(4)}</td>
-                            <td style="color:#ef4444">-$${(t.fee       || 0).toFixed(4)}</td>
-                            <td style="color:#ef4444">-$${(t.slippage  || 0).toFixed(4)}</td>
-                            <td style="color:${t.pnl > 0 ? '#10b981' : '#ef4444'};font-weight:700">$${(t.pnl || 0).toFixed(4)}</td>
-                            <td>${t.result}</td>
-                        </tr>
-                    `).join('');
-                }
-
-            } catch (err) {
-                console.error('Dashboard update error:', err);
-            }
+        // ── Hourly bar chart ──
+        if (hours.length > 0) {
+            hourlyChart.data.labels = hours;
+            hourlyChart.data.datasets[0].data = hours.map(h => hourly[h] || 0);
+            hourlyChart.data.datasets[0].backgroundColor = hours.map(h =>
+                (hourly[h] || 0) >= 0 ? 'rgba(16,185,129,0.65)' : 'rgba(239,68,68,0.65)');
+            hourlyChart.data.datasets[0].borderColor = hours.map(h =>
+                (hourly[h] || 0) >= 0 ? '#10b981' : '#ef4444');
+            hourlyChart.update('none');
         }
 
-        // ── Boot ──────────────────────────────────────────────────────────────
-        window.addEventListener('load', () => {
-            initChart();
-            updateDashboard();
-            setInterval(updateDashboard, 3000);
-        });
-    </script>
+        // ── Comparison ──
+        $('comp_trades').textContent = (s.total_trades || 0).toLocaleString();
+        const crEl = $('comp_rate');
+        crEl.textContent = (s.trades_per_hour || 0).toFixed(0);
+        crEl.className = 'metric-value ' + ((s.trades_per_hour || 0) <= 150 ? 'positive' : 'negative');
+        $('comp_wr').textContent = (s.win_rate || 0) + '%';
+        const cpEl = $('comp_pnl');
+        cpEl.textContent = '$' + (s.total_pnl || 0).toFixed(2);
+        cpEl.className   = 'metric-value ' + colorClass(s.total_pnl);
+        $('comp_avg').textContent = '$' + avg.toFixed(4);
+        $('comp_status').textContent =
+            (s.trades_per_hour || 0) <= 150 && (s.total_trades || 0) > 10 ? '✅ Rate optimized' :
+            (s.trades_per_hour || 0) > 150 ? '⚠️ Still high' : 'Calculating...';
+
+        // ── Projections ──
+        const daily   = pphRate * 24;
+        const monthly = daily * 30;
+        $('proj_daily_1').textContent    = '$' + (daily   * 1).toFixed(2);
+        $('proj_monthly_1').textContent  = '$' + (monthly * 1).toFixed(2);
+        $('proj_daily_5').textContent    = '$' + (daily   * 5).toFixed(2);
+        $('proj_monthly_5').textContent  = '$' + (monthly * 5).toFixed(2);
+        $('proj_daily_10').textContent   = '$' + (daily   * 10).toFixed(2);
+        $('proj_monthly_10').textContent = '$' + (monthly * 10).toFixed(2);
+
+        // ── Recent trades table ──
+        const recent = trades.slice(-10).reverse();
+        const tbody  = $('tradesTable').querySelector('tbody');
+        if (recent.length > 0) {
+            tbody.innerHTML = recent.map(t => `
+                <tr>
+                    <td style="color:rgba(255,255,255,0.5)">${(t.timestamp||'').split(' ')[1] || (t.timestamp||'—')}</td>
+                    <td><span style="font-size:0.8em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.07)">${t.side||'—'}</span></td>
+                    <td>${(t.entry_price||0).toFixed(3)}</td>
+                    <td>${(t.exit_price||0).toFixed(3)}</td>
+                    <td style="color:rgba(255,255,255,0.7)">$${(t.gross_pnl||0).toFixed(4)}</td>
+                    <td style="color:#ef4444">-$${(t.fee||0).toFixed(4)}</td>
+                    <td style="color:#f59e0b">-$${(t.slippage||0).toFixed(4)}</td>
+                    <td style="color:${(t.pnl||0)>0?'#10b981':'#ef4444'};font-weight:700">${(t.pnl||0)>=0?'+':''}$${(t.pnl||0).toFixed(4)}</td>
+                    <td style="color:${(t.result||'')=='WIN'?'#10b981':'#ef4444'}">${t.result||'—'}</td>
+                </tr>
+            `).join('');
+        }
+
+    } catch (err) { console.error('Dashboard error:', err); }
+}
+
+window.addEventListener('load', () => {
+    initCharts();
+    updateDashboard();
+    setInterval(updateDashboard, 5000);
+});
+</script>
 </body>
 </html>
