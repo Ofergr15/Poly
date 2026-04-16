@@ -61,11 +61,12 @@ def save_trades(trades: list):
         return
     try:
         # Get max window already in DB to avoid re-inserting
-        res = _sb.table("trades").select("window").order("window", desc=True).limit(1).execute()
-        max_win = res.data[0]["window"] if res.data else 0
+        res = _sb.table("trades").select("win_window").order("win_window", desc=True).limit(1).execute()
+        max_win = res.data[0]["win_window"] if res.data else 0
         new = [t for t in trades if (t.get("window") or 0) > max_win]
         if new:
-            _sb.table("trades").upsert(new, on_conflict="window").execute()
+            rows = [{**t, "win_window": t.pop("window", None)} for t in new]
+            _sb.table("trades").upsert(rows, on_conflict="win_window").execute()
     except Exception as e:
         print(f"[DB] save_trades error: {e}")
 
@@ -105,8 +106,8 @@ def load_trades_from_db() -> list:
         return []
     try:
         res = _sb.table("trades").select(
-            "window,timestamp,side,entry_price,exit_price,gross_pnl,fee,slippage,pnl,result,confidence"
-        ).order("window", desc=False).execute()
+            "win_window,timestamp,side,entry_price,exit_price,gross_pnl,fee,slippage,pnl,result,confidence"
+        ).order("win_window", desc=False).execute()
         return res.data or []
     except Exception as e:
         print(f"[DB] load_trades error: {e}")
