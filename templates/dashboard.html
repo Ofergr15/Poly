@@ -401,7 +401,11 @@
 
         <!-- Step 4: Ready — bot stopped, show start form -->
         <div id="liveStepStart" class="chart-card" style="display:none;border-color:rgba(16,185,129,0.25)">
-            <h3 style="margin-bottom:18px">🚀 Start Live Trading</h3>
+            <h3 style="margin-bottom:12px">🚀 Start Live Trading</h3>
+            <div id="noKeysWarning" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);
+                border-radius:9px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#f59e0b">
+                ⚠️ No Polymarket API keys — only dry-run mode is available.
+            </div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px">
                 <div>
                     <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Bet Size (USD)</label>
@@ -994,8 +998,6 @@ async function updateLiveStatus() {
         } else if (s.connected === false || s.error) {
             connErr.style.display = 'block';
             $('liveConnErrMsg').textContent = s.error || 'Cannot reach control server. Make sure it is running.';
-        } else if (!s.poly_keys) {
-            setupKeys.style.display = 'block';
         } else if (s.bot_running) {
             running.style.display = 'block';
             const cfg = s.bot_config || {};
@@ -1004,6 +1006,12 @@ async function updateLiveStatus() {
                 (cfg.dry_run ? ' · DRY RUN' : ' · LIVE');
         } else {
             startPanel.style.display = 'block';
+            if (!s.poly_keys) {
+                $('noKeysWarning').style.display = 'block';
+                $('cfgDryRun').checked = true;
+            } else {
+                $('noKeysWarning').style.display = 'none';
+            }
         }
 
         // Show log + signal section if server connected
