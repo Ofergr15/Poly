@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 28px;
+            background: rgba(10, 14, 39, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .topbar-brand {
+            font-size: 1.1em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .topbar-user img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.15);
+        }
+
+        .topbar-user .avatar-fallback {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+        /* ── Tab nav ── */
+        .tab-nav {
+            display: flex;
+            gap: 0;
+            padding: 0 28px;
+            background: rgba(10, 14, 39, 0.8);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .tab-btn {
+            padding: 14px 24px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: rgba(255,255,255,0.45);
+            cursor: pointer;
+            border: none;
+            background: none;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.2s, border-color 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-btn:hover { color: rgba(255,255,255,0.75); }
+        .tab-btn.active { color: #fff; border-bottom-color: #667eea; }
+
+        /* ── Tab content ── */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── Main dashboard layout (same as before) ── */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .status-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badge.running {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: rgba(17, 25, 54, 0.95);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+        }
+
+        .card h3 {
+            font-size: 0.85em;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .card .value { font-size: 2.5em; font-weight: 800; margin-bottom: 8px; }
+        .card .sub { font-size: 0.9em; color: rgba(255,255,255,0.6); }
+
+        .positive { color: #10b981; }
+        .negative { color: #ef4444; }
+        .neutral  { color: #fff; }
+
+        .chart-card {
+            background: rgba(17, 25, 54, 0.95);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card h3 { font-size: 1.2em; margin-bottom: 20px; }
+
+        .chart-container { position: relative; height: 300px; }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .comparison-card {
+            background: rgba(17, 25, 54, 0.95);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .comparison-card h3 { font-size: 1.3em; margin-bottom: 20px; text-align: center; }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .metric-label { color: rgba(255,255,255,0.6); }
+        .metric-value { font-weight: 700; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        th { color: rgba(255,255,255,0.5); font-size: 0.85em; text-transform: uppercase; }
+
+        .projections {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .projections h3 { font-size: 1.3em; margin-bottom: 20px; color: #10b981; }
+
+        .projection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .projection-item {
+            background: rgba(0,0,0,0.2);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .projection-item .label { font-size: 0.9em; color: rgba(255,255,255,0.6); margin-bottom: 8px; }
+        .projection-item .value { font-size: 1.5em; font-weight: 700; color: #10b981; }
+
+        /* ── Live Trading placeholder ── */
+        .coming-soon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .coming-soon .icon { font-size: 4em; margin-bottom: 24px; }
+        .coming-soon h2 { font-size: 2em; font-weight: 800; margin-bottom: 12px; color: rgba(255,255,255,0.9); }
+        .coming-soon p  { font-size: 1.05em; color: rgba(255,255,255,0.5); max-width: 480px; line-height: 1.7; }
+
+        .coming-soon .tag {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            color: #a5b4fc;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 24px;
+        }
+
+        /* ── Offline banner ── */
+        .offline-banner {
+            display: none;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fbbf24;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .comparison { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.8em; }
+            .topbar-user .name { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="topbar-brand">📈 Trading Dashboard</div>
+        <div class="topbar-user">
+            {% if user.picture %}
+                <img src="{{ user.picture }}" alt="{{ user.name }}">
+            {% else %}
+                <div class="avatar-fallback">{{ user.name[0] | upper }}</div>
+            {% endif %}
+            <span class="name">{{ user.name }}</span>
+            <a href="/logout" class="logout-btn">Sign out</a>
+        </div>
+    </div>
+
+    <!-- Offline banner (shown when simulation is offline) -->
+    <div class="offline-banner" id="offlineBanner">
+        ⚠️ Simulation offline — showing last saved data from database
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('week1', this)">📊 Week 1 Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('live', this)">🔴 Live Trading</button>
+    </div>
+
+    <!-- ═══════════════ TAB: Week 1 Dashboard ═══════════════ -->
+    <div id="tab-week1" class="tab-content active">
+        <div class="container">
+            <div class="header">
+                <h1>🚀 Week 1 Production Simulation</h1>
+                <p style="color: rgba(255,255,255,0.7); font-size: 1.1em;">12-Hour Live Test with Phase 1 &amp; 2 Fixes</p>
+
+                <div class="status-badges">
+                    <div class="badge running" id="statusBadge">● SIMULATION RUNNING</div>
+                    <div class="badge">⏱️ Elapsed: <strong id="elapsed">0h 0m</strong></div>
+                    <div class="badge">🎯 Target: 12 hours</div>
+                </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="grid">
+                <div class="card">
+                    <h3>Total P&amp;L</h3>
+                    <div class="value positive" id="totalPnl">$0.00</div>
+                    <div class="sub" id="pnlPerHour">$0/hour</div>
+                </div>
+                <div class="card">
+                    <h3>Win Rate</h3>
+                    <div class="value neutral" id="winRate">0%</div>
+                    <div class="sub" id="winStats">0 wins / 0 losses</div>
+                </div>
+                <div class="card">
+                    <h3>Total Trades</h3>
+                    <div class="value neutral" id="totalTrades">0</div>
+                    <div class="sub" id="tradeRate">0/hour</div>
+                </div>
+                <div class="card">
+                    <h3>Avg P&amp;L / Trade</h3>
+                    <div class="value neutral" id="avgPnl">$0.00</div>
+                    <div class="sub" id="rejectedTrades">0 rejected</div>
+                </div>
+            </div>
+
+            <!-- P&L Chart -->
+            <div class="chart-card">
+                <h3>📈 Cumulative P&amp;L Over Time</h3>
+                <div class="chart-container">
+                    <canvas id="pnlChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Comparison: Old vs New -->
+            <div class="comparison">
+                <div class="comparison-card">
+                    <h3>❌ OLD (10-Hour Test)</h3>
+                    <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value">8,756</span></div>
+                    <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value negative">876</span></div>
+                    <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value">74.3%</span></div>
+                    <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value positive">$227.00</span></div>
+                    <div class="metric-row"><span class="metric-label">Avg P&amp;L/Trade</span><span class="metric-value">$0.026</span></div>
+                    <div class="metric-row"><span class="metric-label">Issues</span><span class="metric-value negative">Overtrading 5.8x</span></div>
+                </div>
+                <div class="comparison-card">
+                    <h3>✅ NEW (Week 1 Sim)</h3>
+                    <div class="metric-row"><span class="metric-label">Total Trades</span><span class="metric-value" id="comp_trades">0</span></div>
+                    <div class="metric-row"><span class="metric-label">Trades/Hour</span><span class="metric-value" id="comp_rate">0</span></div>
+                    <div class="metric-row"><span class="metric-label">Win Rate</span><span class="metric-value" id="comp_wr">0%</span></div>
+                    <div class="metric-row"><span class="metric-label">Total P&amp;L</span><span class="metric-value" id="comp_pnl">$0.00</span></div>
+                    <div class="metric-row"><span class="metric-label">Avg P&amp;L/Trade</span><span class="metric-value" id="comp_avg">$0.00</span></div>
+                    <div class="metric-row"><span class="metric-label">Improvements</span><span class="metric-value positive" id="comp_improvements">Calculating...</span></div>
+                </div>
+            </div>
+
+            <!-- Projections -->
+            <div class="projections">
+                <h3>💰 Profit Projections (Based on Current Performance)</h3>
+                <div class="projection-grid">
+                    <div class="projection-item"><div class="label">Daily ($1 bets)</div><div class="value" id="proj_daily_1">$0</div></div>
+                    <div class="projection-item"><div class="label">Monthly ($1 bets)</div><div class="value" id="proj_monthly_1">$0</div></div>
+                    <div class="projection-item"><div class="label">Daily ($5 bets)</div><div class="value" id="proj_daily_5">$0</div></div>
+                    <div class="projection-item"><div class="label">Monthly ($5 bets)</div><div class="value" id="proj_monthly_5">$0</div></div>
+                    <div class="projection-item"><div class="label">Daily ($10 bets)</div><div class="value" id="proj_daily_10">$0</div></div>
+                    <div class="projection-item"><div class="label">Monthly ($10 bets)</div><div class="value" id="proj_monthly_10">$0</div></div>
+                </div>
+            </div>
+
+            <!-- Recent Trades -->
+            <div class="chart-card" style="margin-top: 24px;">
+                <h3>📜 Recent Trades (Last 10)</h3>
+                <table id="tradesTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th><th>Side</th><th>Entry</th><th>Exit</th>
+                            <th>Gross</th><th>Fee</th><th>Slippage</th><th>Net P&amp;L</th><th>Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="9" style="text-align:center;color:rgba(255,255,255,0.5);">Waiting for trades...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ TAB: Live Trading ═══════════════ -->
+    <div id="tab-live" class="tab-content">
+        <div class="coming-soon">
+            <div class="icon">🔴</div>
+            <h2>Live Trading</h2>
+            <p>Real-time trade execution and position management will appear here once the live trading module is connected.</p>
+            <div class="tag">Coming next</div>
+        </div>
+    </div>
+
+    <script>
+        // ── Tab switching ──────────────────────────────────────────────────────
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // ── Chart ─────────────────────────────────────────────────────────────
+        let pnlChart = null;
+
+        function initChart() {
+            const ctx = document.getElementById('pnlChart').getContext('2d');
+            pnlChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Cumulative P&L',
+                        data: [],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)' } },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: 'rgba(255,255,255,0.5)', callback: v => '$' + v.toFixed(2) }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ── Dashboard update ───────────────────────────────────────────────────
+        async function updateDashboard() {
+            try {
+                const [statsRes, tradesRes] = await Promise.all([
+                    fetch('/api/week1_stats'),
+                    fetch('/api/week1_trades'),
+                ]);
+
+                // Handle auth expiry
+                if (statsRes.status === 401 || tradesRes.status === 401) {
+                    window.location.href = '/login-page';
+                    return;
+                }
+
+                const stats  = await statsRes.json();
+                const tData  = await tradesRes.json();
+                const trades = tData.all_trades || [];
+
+                // Offline indicator
+                document.getElementById('offlineBanner').style.display =
+                    stats._offline ? 'block' : 'none';
+
+                // ── Stats ──
+                const pnlEl = document.getElementById('totalPnl');
+                pnlEl.textContent = '$' + stats.total_pnl.toFixed(2);
+                pnlEl.className = 'value ' + (stats.total_pnl > 0 ? 'positive' : stats.total_pnl < 0 ? 'negative' : 'neutral');
+
+                const pnlPerHour = stats.elapsed_hours > 0 ? stats.total_pnl / stats.elapsed_hours : 0;
+                document.getElementById('pnlPerHour').textContent = '$' + pnlPerHour.toFixed(2) + '/hour';
+
+                document.getElementById('winRate').textContent = stats.win_rate + '%';
+                document.getElementById('winStats').textContent = stats.wins + ' wins / ' + stats.losses + ' losses';
+                document.getElementById('totalTrades').textContent = stats.total_trades.toLocaleString();
+                document.getElementById('tradeRate').textContent = stats.trades_per_hour.toFixed(0) + '/hour';
+
+                const avgPnl = stats.total_trades > 0 ? stats.total_pnl / stats.total_trades : 0;
+                document.getElementById('avgPnl').textContent = '$' + avgPnl.toFixed(4);
+                document.getElementById('rejectedTrades').textContent = stats.rejected_trades + ' rejected';
+
+                const hours   = Math.floor(stats.elapsed_hours);
+                const minutes = Math.floor((stats.elapsed_hours - hours) * 60);
+                document.getElementById('elapsed').textContent = hours + 'h ' + minutes + 'm';
+
+                // ── Comparison ──
+                document.getElementById('comp_trades').textContent = stats.total_trades.toLocaleString();
+                document.getElementById('comp_rate').textContent = stats.trades_per_hour.toFixed(0);
+                document.getElementById('comp_rate').className = 'metric-value ' + (stats.trades_per_hour <= 150 ? 'positive' : 'negative');
+                document.getElementById('comp_wr').textContent = stats.win_rate + '%';
+                document.getElementById('comp_pnl').textContent = '$' + stats.total_pnl.toFixed(2);
+                document.getElementById('comp_pnl').className = 'metric-value ' + (stats.total_pnl > 0 ? 'positive' : 'negative');
+                document.getElementById('comp_avg').textContent = '$' + avgPnl.toFixed(4);
+
+                if (stats.trades_per_hour <= 150 && stats.total_trades > 10)
+                    document.getElementById('comp_improvements').textContent = '✅ Rate optimized';
+                else if (stats.trades_per_hour > 150)
+                    document.getElementById('comp_improvements').textContent = '⚠️ Still high';
+
+                // ── Projections ──
+                const daily  = pnlPerHour * 24;
+                const monthly = daily * 30;
+                document.getElementById('proj_daily_1').textContent   = '$' + (daily   * 1).toFixed(2);
+                document.getElementById('proj_monthly_1').textContent = '$' + (monthly * 1).toFixed(2);
+                document.getElementById('proj_daily_5').textContent   = '$' + (daily   * 5).toFixed(2);
+                document.getElementById('proj_monthly_5').textContent = '$' + (monthly * 5).toFixed(2);
+                document.getElementById('proj_daily_10').textContent  = '$' + (daily  * 10).toFixed(2);
+                document.getElementById('proj_monthly_10').textContent= '$' + (monthly* 10).toFixed(2);
+
+                // ── Chart ──
+                if (trades.length > 0) {
+                    const sampleRate = Math.max(1, Math.floor(trades.length / 100));
+                    const sampled = trades.filter((_, i) => i % sampleRate === 0);
+                    let cumPnl = 0;
+                    pnlChart.data.labels = sampled.map((_, i) => i);
+                    pnlChart.data.datasets[0].data = sampled.map(t => { cumPnl += t.pnl; return cumPnl; });
+                    pnlChart.update('none');
+                }
+
+                // ── Recent trades table ──
+                const recent = trades.slice(-10).reverse();
+                const tbody  = document.getElementById('tradesTable').querySelector('tbody');
+                if (recent.length > 0) {
+                    tbody.innerHTML = recent.map(t => `
+                        <tr>
+                            <td>${(t.timestamp || '').split(' ')[1] || t.timestamp}</td>
+                            <td>${t.side}</td>
+                            <td>${(t.entry_price || 0).toFixed(3)}</td>
+                            <td>${(t.exit_price  || 0).toFixed(3)}</td>
+                            <td>$${(t.gross_pnl  || 0).toFixed(4)}</td>
+                            <td style="color:#ef4444">-$${(t.fee       || 0).toFixed(4)}</td>
+                            <td style="color:#ef4444">-$${(t.slippage  || 0).toFixed(4)}</td>
+                            <td style="color:${t.pnl > 0 ? '#10b981' : '#ef4444'};font-weight:700">$${(t.pnl || 0).toFixed(4)}</td>
+                            <td>${t.result}</td>
+                        </tr>
+                    `).join('');
+                }
+
+            } catch (err) {
+                console.error('Dashboard update error:', err);
+            }
+        }
+
+        // ── Boot ──────────────────────────────────────────────────────────────
+        window.addEventListener('load', () => {
+            initChart();
+            updateDashboard();
+            setInterval(updateDashboard, 3000);
+        });
+    </script>
+</body>
+</html>
