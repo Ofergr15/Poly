@@ -210,8 +210,8 @@
     <!-- ── No-trades placeholder ── -->
     <div id="demoNoTrades" style="display:none;margin:20px 0;padding:20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;text-align:center;color:rgba(255,255,255,0.45)">
         <div style="font-size:1.6em;margin-bottom:8px">⏳</div>
-        <div style="font-size:0.95em;font-weight:600;color:rgba(255,255,255,0.65)">Bot is running — no trades yet this session</div>
-        <div style="font-size:0.82em;margin-top:6px">The model needs BTC volatility to find signals (usually higher during US market hours 9am–5pm ET)</div>
+        <div style="font-size:0.95em;font-weight:600;color:rgba(255,255,255,0.65)">Bot is running — no demo trades recorded yet</div>
+        <div style="font-size:0.82em;margin-top:6px">Trades will appear here once the bot executes its first position</div>
     </div>
 
     <!-- ── Stats (shown once demo trades exist) ── -->
@@ -672,21 +672,9 @@ function initDemoChart() {
     });
 }
 
-let _demoSince = null;
-async function _getDemoSince() {
-    if (_demoSince) return _demoSince;
-    try {
-        const r = await fetch('/api/demo/session');
-        const d = await r.json();
-        if (d.started_at) { _demoSince = d.started_at; }
-    } catch(e) {}
-    return _demoSince;
-}
-
 async function updateDemoDashboard() {
     try {
-        const since = await _getDemoSince();
-        const qs = since ? '?since=' + encodeURIComponent(since) : '';
+        const qs = '';  // no session filter — show all demo history
         const [sr, tr] = await Promise.all([
             fetch('/api/week1_stats' + qs),
             fetch('/api/week1_trades' + qs),
