@@ -195,6 +195,10 @@
         <div class="timer-item"><span class="timer-label">Trades Today</span><span class="timer-value" id="demoTrades" style="color:#a5b4fc">—</span></div>
         <div class="timer-divider"></div>
         <div class="timer-item"><span class="timer-label">Session P&L</span><span class="timer-value" id="demoSessionPnl" style="color:#a5b4fc">—</span></div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">BTC Price</span><span class="timer-value" id="demoBtcPrice" style="color:#f59e0b">—</span></div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">Next Window</span><span class="timer-value" id="demoWindowCountdown" style="color:#a5b4fc;font-variant-numeric:tabular-nums">—</span></div>
     </div>
 
     <!-- ── BTC 5-min Window Timeline ── -->
@@ -275,6 +279,10 @@
             <span class="timer-label"><span class="running-dot" id="liveDot" style="background:#666"></span>Bot</span>
             <span class="timer-value" id="ls_bot" style="color:rgba(255,255,255,0.4)">Stopped</span>
         </div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">BTC Price</span><span class="timer-value" id="liveBtcPrice" style="color:#f59e0b">—</span></div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">Next Window</span><span class="timer-value" id="liveWindowCountdown" style="color:#a5b4fc;font-variant-numeric:tabular-nums">—</span></div>
     </div>
 
     <!-- ── Admin control panel ── -->
@@ -1217,6 +1225,39 @@ window.addEventListener('load', () => {
         const btn = document.querySelector(`.tab-btn[onclick*="'${hash}'"]`);
         if (btn) switchTab(hash, btn);
     }
+
+    // ── BTC price + next-window countdown ────────────────────────────
+    async function updateBtcPrice() {
+        try {
+            const r = await fetch('https://api.coinbase.com/v2/prices/BTC-USD/spot');
+            const d = await r.json();
+            const price = parseFloat(d.data.amount);
+            if (!isNaN(price)) {
+                const fmt = '$' + price.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0});
+                const el1 = $('demoBtcPrice'), el2 = $('liveBtcPrice');
+                if (el1) el1.textContent = fmt;
+                if (el2) el2.textContent = fmt;
+            }
+        } catch(e) {}
+    }
+
+    function updateWindowCountdown() {
+        const now   = Date.now();
+        const secNow = Math.floor(now / 1000);
+        const nextWindow = (Math.floor(secNow / 300) + 1) * 300;
+        const secsLeft = nextWindow - secNow;
+        const m = String(Math.floor(secsLeft / 60)).padStart(2,'0');
+        const s = String(secsLeft % 60).padStart(2,'0');
+        const txt = m + ':' + s;
+        const el1 = $('demoWindowCountdown'), el2 = $('liveWindowCountdown');
+        if (el1) el1.textContent = txt;
+        if (el2) el2.textContent = txt;
+    }
+
+    updateBtcPrice();
+    updateWindowCountdown();
+    setInterval(updateBtcPrice,        15000);
+    setInterval(updateWindowCountdown,  1000);  // tick every second
 
     initDemoChart();
     initLiveChart();
