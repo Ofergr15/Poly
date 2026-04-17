@@ -665,21 +665,9 @@ function initDemoChart() {
     });
 }
 
-let _demoSince = null;
-async function _getDemoSince() {
-    if (_demoSince) return _demoSince;
-    try {
-        const r = await fetch('/api/demo/session');
-        const d = await r.json();
-        if (d.started_at) { _demoSince = d.started_at; }
-    } catch(e) {}
-    return _demoSince;
-}
-
 async function updateDemoDashboard() {
     try {
-        const since = await _getDemoSince();
-        const qs = since ? '?since=' + encodeURIComponent(since) : '';
+        const qs = '';
         const [sr, tr] = await Promise.all([
             fetch('/api/week1_stats' + qs),
             fetch('/api/week1_trades' + qs),
