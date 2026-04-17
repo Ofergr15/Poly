@@ -732,7 +732,7 @@ async function updateDemoDashboard() {
         const tbody=$('demoTradesTable').querySelector('tbody');
         if (recent.length>0) {
             tbody.innerHTML=recent.map(t=>`<tr>
-                <td style="color:rgba(255,255,255,0.45)">${(t.timestamp||'').split(' ')[1]||'—'}</td>
+                <td style="color:rgba(255,255,255,0.45)">${(ts=>(ts?new Date(ts.replace(' ','T')+'Z').toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—'))(t.timestamp||t.synced_at||'')}</td>
                 <td><span style="font-size:0.8em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.07)">${t.side||'—'}</span></td>
                 <td>${(t.entry_price||0).toFixed(4)}</td><td>${(t.exit_price||0).toFixed(4)}</td>
                 <td>$${(t.gross_pnl||0).toFixed(4)}</td>
@@ -1197,7 +1197,7 @@ async function updateLiveDashboard() {
         const tbody=$('liveTradesTable').querySelector('tbody');
         if (recent.length>0) {
             tbody.innerHTML=recent.map(t=>`<tr>
-                <td style="color:rgba(255,255,255,0.45)">${(t.timestamp||'').split(' ')[1]||'—'}</td>
+                <td style="color:rgba(255,255,255,0.45)">${(ts=>(ts?new Date(ts.replace(' ','T')+'Z').toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—'))(t.timestamp||t.synced_at||'')}</td>
                 <td><span style="font-size:0.8em;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.07)">${t.side||'—'}</span></td>
                 <td>${(t.entry_price||0).toFixed(4)}</td><td>${(t.exit_price||0).toFixed(4)}</td>
                 <td>$${(t.gross_pnl||0).toFixed(4)}</td>
