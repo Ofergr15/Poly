@@ -1286,8 +1286,12 @@ async function stopBot() {
     const btn = $('stopBotBtn');
     btn.disabled = true; btn.textContent = 'Stopping...';
     try {
-        await fetch('/api/live/server/stop', { method: 'POST' });
-    } catch(e) {}
+        const r = await fetch('/api/live/server/stop', { method: 'POST', credentials: 'include' });
+        if (!r.ok) {
+            const d = await r.json().catch(()=>({}));
+            alert('Stop failed: ' + (d.error || r.status));
+        }
+    } catch(e) { alert('Stop error: ' + e); }
     btn.disabled = false; btn.textContent = '⏹ Stop Bot';
     setTimeout(updateLiveStatus, 1000);
 }
@@ -1434,7 +1438,7 @@ window.addEventListener('load', () => {
             const price = parseFloat(d.data.amount);
             if (!isNaN(price)) {
                 const fmt = '$' + price.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0});
-                ['demoBtcPrice','liveBtcPrice','liveRunningBtc'].forEach(id => { const el=$('id' in window?id:id); if($( id)) $(id).textContent=fmt; });
+                ['demoBtcPrice','liveBtcPrice','liveRunningBtc'].forEach(id => { const el=$(id); if(el) el.textContent=fmt; });
             }
         } catch(e) {}
     }
@@ -1447,9 +1451,7 @@ window.addEventListener('load', () => {
         const m = String(Math.floor(secsLeft / 60)).padStart(2,'0');
         const s = String(secsLeft % 60).padStart(2,'0');
         const txt = m + ':' + s;
-        const el1 = $('demoWindowCountdown'), el2 = $('liveWindowCountdown');
-        if (el1) el1.textContent = txt;
-        if (el2) el2.textContent = txt;
+        ['demoWindowCountdown','liveWindowCountdown','liveRunningCountdown'].forEach(id => { const el=$(id); if(el) el.textContent=txt; });
 
         // Running-for timer
         const el3 = $('demoRunningFor');
