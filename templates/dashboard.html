@@ -1009,17 +1009,21 @@ async function updateLiveStatus() {
         $('ls_supabase').innerHTML = statusDot(s.supabase);
         $('ls_polykeys').innerHTML = statusDot(s.poly_keys);
         $('ls_serve').innerHTML    = statusDot(s.serve_py);
-        // Balance lives in Polymarket's exchange contract — link to their profile
+        // Balance: show real USDC.e amount with link to Polygonscan
         const walletAddr = s.wallet_address || '';
         const polyUrl = walletAddr
-            ? `https://polymarket.com/profile/${walletAddr}`
-            : 'https://polymarket.com';
-        const balLink = `<a href="${polyUrl}" target="_blank" rel="noopener"
-            style="color:#10b981;text-decoration:none;font-weight:700"
-            title="View on Polymarket">View ↗</a>`;
-        if ($('ls_balance'))       $('ls_balance').innerHTML       = balLink;
-        if ($('demoUsdcBalance'))  $('demoUsdcBalance').innerHTML  = balLink;
-        if ($('cfg_balance'))      $('cfg_balance').innerHTML      = balLink;
+            ? `https://polygonscan.com/address/${walletAddr}`
+            : 'https://polygonscan.com';
+        const balText = s.balance_usdc != null
+            ? `<a href="${polyUrl}" target="_blank" rel="noopener"
+                style="color:#10b981;text-decoration:none;font-weight:700"
+                title="View on Polygonscan">$${Number(s.balance_usdc).toFixed(2)} ↗</a>`
+            : `<a href="${polyUrl}" target="_blank" rel="noopener"
+                style="color:#10b981;text-decoration:none;font-weight:700"
+                title="View on Polygonscan">View ↗</a>`;
+        if ($('ls_balance'))       $('ls_balance').innerHTML       = balText;
+        if ($('demoUsdcBalance'))  $('demoUsdcBalance').innerHTML  = balText;
+        if ($('cfg_balance'))      $('cfg_balance').innerHTML      = balText;
 
         if (s.bot_running) {
             $('ls_bot').textContent = 'Running'; $('ls_bot').style.color = '#10b981';
@@ -1078,7 +1082,7 @@ async function updateLiveStatus() {
             $('cfg_polykeys').innerHTML= s.poly_keys
                 ? '<span style="color:#10b981">✓ Configured</span>'
                 : '<span style="color:#f59e0b">Not set</span>';
-            $('cfg_balance').textContent = s.balance_usdc != null ? '$' + s.balance_usdc.toFixed(2) : '—';
+            // cfg_balance already set by balText above
 
             const cfg = s.bot_config || {};
             const bRunning = s.bot_running;
