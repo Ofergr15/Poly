@@ -1040,6 +1040,9 @@ async function updateLiveStatus() {
         if ($('ls_balance'))       $('ls_balance').innerHTML       = balText;
         if ($('demoUsdcBalance'))  $('demoUsdcBalance').innerHTML  = balText;
         if ($('cfg_balance'))      $('cfg_balance').innerHTML      = balText;
+        // Update feed balance (plain text, no link)
+        const feedBal = $('feedBalance');
+        if (feedBal) feedBal.textContent = s.balance_usdc != null ? '$' + Number(s.balance_usdc).toFixed(2) : '—';
 
         if (s.bot_running) {
             $('ls_bot').textContent = 'Running'; $('ls_bot').style.color = '#10b981';
@@ -1499,10 +1502,7 @@ async function updateLiveDashboard() {
         } else if (feedRows && liveTrades.length === 0) {
             feedRows.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;font-size:0.85em">No live trades yet</div>';
         }
-        // Update balance in feed
-        if (feedBal && s && s.balance_usdc != null) {
-            feedBal.textContent = '$' + Number(s.balance_usdc).toFixed(2);
-        }
+        // feedBalance updated by updateLiveStatus (has access to status data)
 
     } catch(e) { console.error('Live dashboard error:', e); }
 }
