@@ -1052,6 +1052,8 @@ async function updateLiveStatus() {
                 (cfg.dry_run ? ' · DRY RUN' : ' · LIVE');
             // Only show Stop Bot for live (non-dry-run) bots
             $('stopBotBtn').style.display = cfg.dry_run ? 'none' : '';
+            // If only demo bot is running, also show the Start panel so live can be launched
+            if (cfg.dry_run) startPanel.style.display = 'block';
         } else {
             startPanel.style.display = 'block';
             if (!s.poly_keys) {
