@@ -394,8 +394,8 @@
                         <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Next Window</div><div class="timer-value" id="liveRunningCountdown" style="font-size:1.1em;color:#a5b4fc;font-variant-numeric:tabular-nums">—</div></div>
                     </div>
                 </div>
-                <button onclick="stopBot()" id="stopBotBtn"
-                    style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
+                <button onclick="stopBot()" id="stopBotBtn" style="display:none;
+                    background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);
                     color:#f87171;padding:10px 22px;border-radius:10px;font-size:0.9em;font-weight:700;cursor:pointer;font-family:inherit">
                     ⏹ Stop Bot
                 </button>
@@ -1050,6 +1050,8 @@ async function updateLiveStatus() {
             $('runningCfgLabel').textContent =
                 `$${cfg.bet || 1} bet · ${cfg.confidence || 55}% confidence` +
                 (cfg.dry_run ? ' · DRY RUN' : ' · LIVE');
+            // Only show Stop Bot for live (non-dry-run) bots
+            $('stopBotBtn').style.display = cfg.dry_run ? 'none' : '';
         } else {
             startPanel.style.display = 'block';
             if (!s.poly_keys) {
@@ -1286,14 +1288,19 @@ async function stopBot() {
     const btn = $('stopBotBtn');
     btn.disabled = true; btn.textContent = 'Stopping...';
     try {
-        const r = await fetch('/api/live/server/stop', { method: 'POST', credentials: 'include' });
-        if (!r.ok) {
+        const r = await fetch('/api/live/server/stop', { method: 'POST' });
+        if (r.ok) {
+            btn.style.display = 'none';
+        } else {
             const d = await r.json().catch(()=>({}));
             alert('Stop failed: ' + (d.error || r.status));
+            btn.disabled = false; btn.textContent = '⏹ Stop Bot';
         }
-    } catch(e) { alert('Stop error: ' + e); }
-    btn.disabled = false; btn.textContent = '⏹ Stop Bot';
-    setTimeout(updateLiveStatus, 1000);
+    } catch(e) {
+        alert('Stop error: ' + e);
+        btn.disabled = false; btn.textContent = '⏹ Stop Bot';
+    }
+    setTimeout(updateLiveStatus, 1500);
 }
 
 // ── Trading data ──────────────────────────────────────────────
