@@ -405,6 +405,22 @@
     </div><!-- /liveControlPanel -->
     {% endif %}
 
+    <!-- ── Live Trade Feed ── -->
+    <div id="liveTradeFeed" style="margin-top:16px">
+        <div class="chart-card" style="padding:18px 20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+                <div style="font-weight:700;font-size:1em;letter-spacing:0.5px">LIVE TRADE FEED</div>
+                <div style="display:flex;align-items:center;gap:20px">
+                    <div style="font-size:0.82em;color:rgba(255,255,255,0.45)">Balance: <span id="feedBalance" style="color:#10b981;font-weight:700">—</span></div>
+                    <div style="font-size:0.82em;color:rgba(255,255,255,0.45)">Session P&L: <span id="feedPnl" style="font-weight:700">—</span></div>
+                </div>
+            </div>
+            <div id="liveTradeRows" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto">
+                <div style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;font-size:0.85em">No live trades yet</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Live Signal Alert ── -->
     <div id="liveSignalSection" style="display:none;margin-top:16px">
         <div class="chart-card" style="padding:18px 20px">
@@ -1432,6 +1448,61 @@ async function updateLiveDashboard() {
                 <td style="color:${(t.result||'')==='WIN'?'#10b981':'#ef4444'}">${t.result||'—'}</td>
             </tr>`).join('');
         }
+
+        // ── Live Trade Feed (always visible) ────────────────────────────────
+        const feedRows = $('liveTradeRows');
+        const feedBal  = $('feedBalance');
+        const feedPnl  = $('feedPnl');
+        if (feedRows && liveTrades.length > 0) {
+            const allLive = liveTrades.slice().reverse().slice(0, 15);
+            const sessionPnl = (ls.total_pnl || 0);
+            feedRows.innerHTML = allLive.map(t => {
+                const win  = (t.result || '') === 'WIN';
+                const pnl  = t.pnl || 0;
+                const time = (t.timestamp || t.synced_at || '').replace(' ','T') + (t.timestamp ? '' : '');
+                const tStr = time ? new Date(time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '—';
+                const dir  = (t.side||'').includes('UP') ? '▲ UP' : '▼ DOWN';
+                const dirColor = (t.side||'').includes('UP') ? '#10b981' : '#f59e0b';
+                return `<div style="display:flex;align-items:center;justify-content:space-between;
+                    padding:10px 14px;border-radius:10px;
+                    background:${win ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)'};
+                    border:1px solid ${win ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}">
+                    <div style="display:flex;align-items:center;gap:14px">
+                        <span style="font-size:1.2em">${win ? '✅' : '❌'}</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9em;color:${dirColor}">${dir}</div>
+                            <div style="font-size:0.75em;color:rgba(255,255,255,0.4)">${tStr}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:20px;align-items:center">
+                        <div style="text-align:right">
+                            <div style="font-size:0.75em;color:rgba(255,255,255,0.4)">Entry → Exit</div>
+                            <div style="font-size:0.85em">${(t.entry_price||0).toFixed(3)} → ${(t.exit_price||0).toFixed(3)}</div>
+                        </div>
+                        <div style="text-align:right;min-width:70px">
+                            <div style="font-size:0.75em;color:rgba(255,255,255,0.4)">P&L</div>
+                            <div style="font-weight:700;color:${pnl>=0?'#10b981':'#ef4444'}">${pnl>=0?'+':''}$${pnl.toFixed(3)}</div>
+                        </div>
+                        <div style="text-align:center;min-width:50px">
+                            <span style="font-size:0.78em;padding:3px 10px;border-radius:20px;font-weight:700;
+                                background:${win?'rgba(16,185,129,0.2)':'rgba(239,68,68,0.2)'};
+                                color:${win?'#10b981':'#ef4444'}">${t.result||'—'}</span>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            if (feedPnl) {
+                feedPnl.textContent = (sessionPnl >= 0 ? '+' : '') + '$' + sessionPnl.toFixed(2);
+                feedPnl.style.color = sessionPnl >= 0 ? '#10b981' : '#ef4444';
+            }
+        } else if (feedRows && liveTrades.length === 0) {
+            feedRows.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);padding:20px;font-size:0.85em">No live trades yet</div>';
+        }
+        // Update balance in feed
+        if (feedBal && s && s.balance_usdc != null) {
+            feedBal.textContent = '$' + Number(s.balance_usdc).toFixed(2);
+        }
+
     } catch(e) { console.error('Live dashboard error:', e); }
 }
 
