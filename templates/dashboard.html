@@ -173,6 +173,7 @@
     <button class="tab-btn active" onclick="switchTab('week1',this)">📊 Demo Mode</button>
     <button class="tab-btn" onclick="switchTab('live',this)">🔴 Live Trading</button>
     <button class="tab-btn" onclick="switchTab('compare',this)">⚖️ Compare</button>
+    <button class="tab-btn" onclick="switchTab('settings',this)">⚙️ Settings</button>
 </div>
 
 <!-- ══════════ DEMO MODE TAB ══════════ -->
@@ -199,6 +200,10 @@
         <div class="timer-item"><span class="timer-label">BTC Price</span><span class="timer-value" id="demoBtcPrice" style="color:#f59e0b">—</span></div>
         <div class="timer-divider"></div>
         <div class="timer-item"><span class="timer-label">Next Window</span><span class="timer-value" id="demoWindowCountdown" style="color:#a5b4fc;font-variant-numeric:tabular-nums">—</span></div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">Since 1st Trade</span><span class="timer-value" id="demoRunningFor" style="color:rgba(255,255,255,0.6);font-variant-numeric:tabular-nums">—</span></div>
+        <div class="timer-divider"></div>
+        <div class="timer-item"><span class="timer-label">USDC Balance</span><span class="timer-value" id="demoUsdcBalance" style="color:#10b981">—</span></div>
     </div>
 
     <!-- ── BTC 5-min Window Timeline ── -->
@@ -355,9 +360,10 @@
                     <label style="font-size:0.75em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px">Mode</label>
                     <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 12px;
                         background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:9px">
-                        <input id="cfgDryRun" type="checkbox"
+                        <input id="cfgDryRun" type="checkbox" checked
+                            onchange="onDryRunToggle(this)"
                             style="width:16px;height:16px;accent-color:#667eea;cursor:pointer">
-                        <span style="font-size:0.9em">Dry run (no real orders)</span>
+                        <span id="dryRunLabel" style="font-size:0.9em">Dry run (no real orders)</span>
                     </label>
                 </div>
             </div>
@@ -384,6 +390,8 @@
                         <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Session P&L</div><div class="timer-value green" id="liveSessionPnl" style="font-size:1.1em">—</div></div>
                         <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Trades</div><div class="timer-value" id="liveTradesToday" style="font-size:1.1em">0</div></div>
                         <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">24h Proj</div><div class="timer-value green" id="liveProj24h" style="font-size:1.1em">—</div></div>
+                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">BTC Price</div><div class="timer-value" id="liveRunningBtc" style="font-size:1.1em;color:#f59e0b">—</div></div>
+                        <div><div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px">Next Window</div><div class="timer-value" id="liveRunningCountdown" style="font-size:1.1em;color:#a5b4fc;font-variant-numeric:tabular-nums">—</div></div>
                     </div>
                 </div>
                 <button onclick="stopBot()" id="stopBotBtn"
@@ -445,7 +453,14 @@
         </div>
     </div>
 
-    <!-- ── Trading data (shown once live trades exist) ── -->
+    <!-- ── No-trades placeholder ── -->
+    <div id="liveNoTrades" style="display:none;margin:20px 0;padding:20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:14px;text-align:center;color:rgba(255,255,255,0.45)">
+        <div style="font-size:1.6em;margin-bottom:8px">⏳</div>
+        <div style="font-size:0.95em;font-weight:600;color:rgba(255,255,255,0.65)">Bot is running — no live trades recorded yet</div>
+        <div style="font-size:0.82em;margin-top:6px">First trade will appear here once the bot executes its first position</div>
+    </div>
+
+    <!-- ── Trading data ── -->
     <div id="liveDataSection" style="display:none;margin-top:4px">
 
         <div class="grid grid-6">
@@ -521,6 +536,74 @@
         </div>
 
     </div>
+</div>
+</div>
+
+<!-- ── Settings Tab ── -->
+<div id="tab-settings" class="tab-content">
+<div class="container">
+
+    <div style="text-align:center;padding:28px 0 16px">
+        <h2 style="font-size:1.5em;font-weight:800;background:linear-gradient(135deg,#667eea,#f093fb);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Settings</h2>
+        <p style="color:rgba(255,255,255,0.4);font-size:0.88em;margin-top:6px">Server connection &amp; Polymarket account setup</p>
+    </div>
+
+    <!-- Connection status -->
+    <div class="chart-card" style="margin-bottom:18px">
+        <h3 style="margin-bottom:16px">🔌 Connection Status</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+            <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.07)">
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Control Server</div>
+                <div style="font-weight:700;font-size:1.05em" id="cfg_server">—</div>
+            </div>
+            <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.07)">
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Supabase</div>
+                <div style="font-weight:700;font-size:1.05em" id="cfg_supabase">—</div>
+            </div>
+            <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.07)">
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">serve.py (ML)</div>
+                <div style="font-weight:700;font-size:1.05em" id="cfg_serve">—</div>
+            </div>
+            <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.07)">
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Poly API Keys</div>
+                <div style="font-weight:700;font-size:1.05em" id="cfg_polykeys">—</div>
+            </div>
+            <div style="padding:14px 16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.07)">
+                <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">USDC Balance</div>
+                <div style="font-weight:700;font-size:1.05em;color:#10b981" id="cfg_balance">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Polymarket wallet setup -->
+    <div class="chart-card" style="margin-bottom:18px;border-color:rgba(99,102,241,0.3)">
+        <h3 style="margin-bottom:6px">🔑 Polymarket Wallet Setup</h3>
+        <p style="color:rgba(255,255,255,0.45);font-size:0.85em;margin-bottom:18px;line-height:1.6">
+            Export your private key from <strong style="color:#fff">Polymarket → Settings → Private Key</strong>.
+            It is sent directly to your VPS control server — never stored on Vercel.
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+            <input id="settingsPkInput" type="password" placeholder="0x your private key..."
+                style="flex:1;min-width:300px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);
+                color:#fff;padding:11px 14px;border-radius:10px;font-size:0.9em;font-family:monospace;outline:none">
+            <button onclick="settingsSetupKeys()"
+                style="background:linear-gradient(135deg,#667eea,#764ba2);border:none;color:#fff;
+                padding:11px 24px;border-radius:10px;font-size:0.9em;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
+                Generate API Keys
+            </button>
+        </div>
+        <div id="settingsKeysMsg" style="font-size:0.85em;color:rgba(255,255,255,0.5);min-height:20px"></div>
+        <div style="margin-top:14px;padding:12px 16px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:10px;font-size:0.82em;color:rgba(245,158,11,0.85);line-height:1.6">
+            ⚠️ Your private key controls your funds. Only enter it here on a device you trust. Never share it anywhere else.
+        </div>
+    </div>
+
+    <!-- Bot config info -->
+    <div class="chart-card">
+        <h3 style="margin-bottom:16px">🤖 Current Bot Config</h3>
+        <div id="settingsBotConfig" style="color:rgba(255,255,255,0.45);font-size:0.88em">Loading...</div>
+    </div>
+
 </div>
 </div>
 
@@ -693,6 +776,17 @@ async function updateDemoDashboard() {
         const trades = td.all_trades || [];
         const hasData = (s.total_trades || 0) > 0;
 
+        // Seed running-for timer from first (oldest) trade timestamp.
+        // Trades are sorted ascending (oldest first), so trades[0] is the earliest.
+        const oldest = trades[0];
+        if (oldest) {
+            const firstTs = oldest.timestamp || oldest.synced_at || '';
+            if (firstTs) {
+                const d = new Date(firstTs.replace(' ', 'T') + (firstTs.includes('Z') ? '' : 'Z'));
+                if (!isNaN(d)) window._demoStartedAt = d;
+            }
+        }
+
         $('demoDataSection').style.display = hasData ? 'block' : 'none';
         $('demoNoTrades').style.display    = hasData ? 'none' : 'block';
         if (!hasData) return;
@@ -763,13 +857,11 @@ async function updateDemoStatus() {
         $('ds_supabase').innerHTML = statusDot(s.supabase);
         $('ds_serve').innerHTML    = statusDot(s.serve_py);
 
-        const demoRunning = s.bot_running && (s.bot_config || {}).dry_run === true;
-        if (demoRunning) {
+        // systemd demo service always runs --dry-run; treat any running bot on
+        // the demo tab as demo mode regardless of _bot_config.dry_run flag.
+        if (s.bot_running) {
             $('ds_bot').textContent = 'Running'; $('ds_bot').style.color = '#a5b4fc';
             $('demoDot').style.background = '#a5b4fc';
-        } else if (s.bot_running) {
-            $('ds_bot').textContent = 'Live mode'; $('ds_bot').style.color = '#10b981';
-            $('demoDot').style.background = '#10b981';
         } else {
             $('ds_bot').textContent = 'Stopped'; $('ds_bot').style.color = 'rgba(255,255,255,0.4)';
             $('demoDot').style.background = '#666';
@@ -917,7 +1009,17 @@ async function updateLiveStatus() {
         $('ls_supabase').innerHTML = statusDot(s.supabase);
         $('ls_polykeys').innerHTML = statusDot(s.poly_keys);
         $('ls_serve').innerHTML    = statusDot(s.serve_py);
-        $('ls_balance').textContent= s.balance_usdc != null ? '$' + s.balance_usdc.toFixed(2) : '—';
+        // Balance lives in Polymarket's exchange contract — link to their profile
+        const walletAddr = s.wallet_address || '';
+        const polyUrl = walletAddr
+            ? `https://polymarket.com/profile/${walletAddr}`
+            : 'https://polymarket.com';
+        const balLink = `<a href="${polyUrl}" target="_blank" rel="noopener"
+            style="color:#10b981;text-decoration:none;font-weight:700"
+            title="View on Polymarket">View ↗</a>`;
+        if ($('ls_balance'))       $('ls_balance').innerHTML       = balLink;
+        if ($('demoUsdcBalance'))  $('demoUsdcBalance').innerHTML  = balLink;
+        if ($('cfg_balance'))      $('cfg_balance').innerHTML      = balLink;
 
         if (s.bot_running) {
             $('ls_bot').textContent = 'Running'; $('ls_bot').style.color = '#10b981';
@@ -962,6 +1064,48 @@ async function updateLiveStatus() {
         if (s.server_configured && s.connected !== false) {
             $('liveLogSection').style.display = 'block';
             $('liveSignalSection').style.display = 'block';
+        }
+
+        // ── Settings tab status ───────────────────────────────
+        if ($('cfg_server')) {
+            $('cfg_server').innerHTML  = s.connected === false ? '<span style="color:#ef4444">Offline</span>' : '<span style="color:#10b981">Online</span>';
+            $('cfg_supabase').innerHTML= statusDot(s.supabase);
+            $('cfg_serve').innerHTML   = statusDot(s.serve_py);
+            $('cfg_polykeys').innerHTML= s.poly_keys
+                ? '<span style="color:#10b981">✓ Configured</span>'
+                : '<span style="color:#f59e0b">Not set</span>';
+            $('cfg_balance').textContent = s.balance_usdc != null ? '$' + s.balance_usdc.toFixed(2) : '—';
+
+            const cfg = s.bot_config || {};
+            const bRunning = s.bot_running;
+            $('settingsBotConfig').innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+                    <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                        <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Status</div>
+                        <div style="font-weight:700;color:${bRunning?'#10b981':'rgba(255,255,255,0.4)'}">${bRunning?'Running':'Stopped'}</div>
+                    </div>
+                    <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                        <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Mode</div>
+                        <div style="font-weight:700">${cfg.dry_run !== undefined ? (cfg.dry_run ? 'Demo (dry run)' : 'Live') : '—'}</div>
+                    </div>
+                    <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                        <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Bet Size</div>
+                        <div style="font-weight:700">${cfg.bet != null ? '$'+cfg.bet : '—'}</div>
+                    </div>
+                    <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                        <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Min Confidence</div>
+                        <div style="font-weight:700">${cfg.confidence != null ? cfg.confidence+'%' : '—'}</div>
+                    </div>
+                    <div style="padding:10px 14px;background:rgba(255,255,255,0.04);border-radius:10px">
+                        <div style="font-size:0.72em;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Started</div>
+                        <div style="font-weight:700;font-size:0.9em">${s.bot_started ? new Date(s.bot_started.replace('Z','')+'+00:00').toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '—'}</div>
+                    </div>
+                </div>`;
+        }
+
+        // ── Demo running-for timer seed ───────────────────────
+        if (s.bot_started && s.bot_running) {
+            window._demoStartedAt = new Date(s.bot_started.replace('Z','')+'+00:00');
         }
 
     } catch(e) { /* server unreachable */ }
@@ -1060,7 +1204,62 @@ async function setupKeys() {
     } catch(e) { msg.style.color = '#f87171'; msg.textContent = 'Request failed.'; }
 }
 
+function onDryRunToggle(cb) {
+    const label = $('dryRunLabel');
+    const btn   = $('startBotBtn');
+    if (cb.checked) {
+        label.textContent = 'Dry run (no real orders)';
+        label.style.color = '';
+        btn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
+        btn.textContent = '▶ Start Bot';
+    } else {
+        label.textContent = '⚠️ LIVE — real money!';
+        label.style.color = '#f87171';
+        btn.style.background = 'linear-gradient(135deg,#ef4444,#b91c1c)';
+        btn.textContent = '▶ Start LIVE Bot';
+    }
+}
+
+async function settingsSetupKeys() {
+    const pk  = $('settingsPkInput').value.trim();
+    const msg = $('settingsKeysMsg');
+    if (!pk) { msg.textContent = 'Please enter your private key.'; return; }
+    msg.style.color = 'rgba(255,255,255,0.5)';
+    msg.textContent = 'Generating API keys...';
+    try {
+        const r = await fetch('/api/live/server/setup-keys', {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ private_key: pk })
+        });
+        const d = await r.json();
+        if (d.ok) {
+            msg.style.color = '#10b981';
+            msg.textContent = '✓ API keys generated and saved. You can now start live trading.';
+            $('settingsPkInput').value = '';
+            setTimeout(updateLiveStatus, 1500);
+        } else {
+            msg.style.color = '#f87171';
+            msg.textContent = '✗ ' + (d.detail || d.error || 'Failed');
+        }
+    } catch(e) { msg.style.color = '#f87171'; msg.textContent = 'Request failed — is the control server running?'; }
+}
+
 async function startBot() {
+    const isDryRun = $('cfgDryRun').checked;
+    const bet      = parseFloat($('cfgBet').value) || 1.0;
+
+    // Require explicit confirmation for live (real money) trades
+    if (!isDryRun) {
+        const answer = prompt(
+            `⚠️ LIVE TRADING — REAL MONEY\n\nThis will place real orders on Polymarket.\n\nBet size: $${bet} per trade\n\nType CONFIRM to proceed:`
+        );
+        if (answer !== 'CONFIRM') {
+            $('startBotMsg').style.color = '#f59e0b';
+            $('startBotMsg').textContent = 'Cancelled — type CONFIRM exactly to start live trading.';
+            return;
+        }
+    }
+
     const btn = $('startBotBtn');
     const msg = $('startBotMsg');
     btn.disabled = true; btn.textContent = 'Starting...';
@@ -1069,9 +1268,9 @@ async function startBot() {
         const r = await fetch('/api/live/server/start', {
             method: 'POST', headers: {'Content-Type':'application/json'},
             body: JSON.stringify({
-                bet:        parseFloat($('cfgBet').value)   || 1.0,
+                bet:        bet,
                 confidence: parseFloat($('cfgConf').value)  || 55.0,
-                dry_run:    $('cfgDryRun').checked,
+                dry_run:    isDryRun,
                 max_hours:  hours ? parseFloat(hours) : null,
             })
         });
@@ -1110,6 +1309,7 @@ async function updateLiveDashboard() {
         const hasData    = (ls.total_trades || 0) > 0;
 
         $('liveDataSection').style.display = hasData ? 'block' : 'none';
+        if ($('liveNoTrades')) $('liveNoTrades').style.display = hasData ? 'none' : 'block';
         if (!hasData) return;
 
         const pphLive = ls.elapsed_hours > 0 ? (ls.total_pnl||0)/ls.elapsed_hours : 0;
@@ -1234,9 +1434,7 @@ window.addEventListener('load', () => {
             const price = parseFloat(d.data.amount);
             if (!isNaN(price)) {
                 const fmt = '$' + price.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0});
-                const el1 = $('demoBtcPrice'), el2 = $('liveBtcPrice');
-                if (el1) el1.textContent = fmt;
-                if (el2) el2.textContent = fmt;
+                ['demoBtcPrice','liveBtcPrice','liveRunningBtc'].forEach(id => { const el=$('id' in window?id:id); if($( id)) $(id).textContent=fmt; });
             }
         } catch(e) {}
     }
@@ -1252,6 +1450,16 @@ window.addEventListener('load', () => {
         const el1 = $('demoWindowCountdown'), el2 = $('liveWindowCountdown');
         if (el1) el1.textContent = txt;
         if (el2) el2.textContent = txt;
+
+        // Running-for timer
+        const el3 = $('demoRunningFor');
+        if (el3 && window._demoStartedAt) {
+            const elapsed = Math.floor((Date.now() - window._demoStartedAt) / 1000);
+            const hh = String(Math.floor(elapsed / 3600)).padStart(2,'0');
+            const mm = String(Math.floor((elapsed % 3600) / 60)).padStart(2,'0');
+            const ss = String(elapsed % 60).padStart(2,'0');
+            el3.textContent = hh + ':' + mm + ':' + ss;
+        }
     }
 
     updateBtcPrice();
